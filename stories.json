@@ -20,7 +20,7 @@
     "audio": "audio/grey-lady-bamburgh.mp3"
   },
 {
-    "id": "Scary Rachael",
+    "id": "scary-rachael",
     "title": "Scary Rachael",
     "latitude": 54.787,
     "longitude": -1.638,
@@ -30,7 +30,7 @@
     "audio": "audio/rachael.mp3"
   }, 
   {
-    "id": "The Bog Faeries",
+    "id": "bog-faeries",
     "title": "The Bog Faeries",
     "latitude": 52.193,
     "longitude": -2.699,
