@@ -97,9 +97,9 @@ function loadStories() {
       if (!res.ok) throw new Error('Failed to load stories');
       return res.json();
     })
-    .then(stories => {
-      // ... rest of your existing loadStories code
-    })
+   then(stories => {
+      window.storiesData = stories; // Add this line to make stories globally available
+          })
     .catch(error => {
       console.error('Error loading stories:', error);
       const container = document.getElementById('stories');
