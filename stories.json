@@ -6,7 +6,7 @@
     "longitude": -1.5711,
     "category": "Fae Creature",
     "content": "In the 14th century, young John Lambton skipped church...",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Penshaw_Monument.jpg",
+    "image": "image/Penshaw_Monument.jpg",
     "audio": "audio/lambton-worm.mp3"
   },
   {
@@ -16,7 +16,7 @@
     "longitude": -1.7109,
     "category": "Ghost Story",
     "content": "High on the windswept cliffs of Northumberland...",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg",
+    "image": "image/Bamburgh_Castle.jpg",
     "audio": "audio/grey-lady-bamburgh.mp3"
   },
 {
@@ -26,7 +26,7 @@
     "longitude": -1.638,
     "category": "Fae Creature",
     "content": "In the 21st century, there was a scary person called Rachael",
-    "image": "https://en.wikipedia.org/wiki/Pig#/media/File:Pig_farm_Vampula_1.jpg",
-    "audio": ""
+    "image": "image/Rachael.jpg",
+    "audio": "audio/Rachael-lehain.mp3"
   } 
 ]
