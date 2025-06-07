@@ -6,16 +6,82 @@
   <title>Folklore Explorer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #map { height: 50vh; width: 100%; }
-    .story-list { padding: 1rem; }
-    .story { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
-    .locked { background-color: #f9f9f9; }
-    .unlocked { background-color: #e0ffe0; }
-    img { max-width: 100%; border-radius: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1e2d1e;
+      color: #f0f0f0;
+    }
+    header {
+      background-color: #2d402d;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-bottom: 2px solid #4a664a;
+    }
+    #map {
+      height: 50vh;
+      width: 95%;
+      margin: 1rem auto;
+      border: 4px solid #4a664a;
+      border-radius: 8px;
+    }
+    .controls {
+      width: 95%;
+      margin: auto;
+      padding: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .controls input,
+    .controls select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .story-list {
+      width: 95%;
+      margin: auto;
+      padding: 1rem;
+    }
+    .story {
+      border: 1px solid #4a664a;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      background-color: #2d402d;
+      cursor: pointer;
+    }
+    .story:hover {
+      background-color: #3c533c;
+    }
+    .locked {
+      opacity: 0.6;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
+  <header>Folklore Explorer</header>
+
+  <div class="controls">
+    <input type="text" id="searchBar" placeholder="Search by title or keyword">
+    <select id="categoryFilter">
+      <option value="">All Categories</option>
+      <option value="Ghost Story">Ghost Story</option>
+      <option value="Folk Tale">Folk Tale</option>
+      <option value="Fae Creature">Fae Creature</option>
+    </select>
+    <input type="number" id="distanceFilter" placeholder="Within distance (m)" min="0">
+  </div>
+
   <div id="map"></div>
   <div class="story-list" id="stories"></div>
 
@@ -26,6 +92,7 @@
         title: "The Lambton Worm",
         latitude: 54.8520,
         longitude: -1.5711,
+        category: "Fae Creature",
         content: "In the 14th century, young John Lambton skipped church one Sunday...",
         image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Penshaw_Monument.jpg"
       },
@@ -33,17 +100,13 @@
         title: "The Grey Lady of Bamburgh Castle",
         latitude: 55.6090,
         longitude: -1.7109,
+        category: "Ghost Story",
         content: "High on the windswept cliffs of Northumberland stands Bamburgh Castle...",
         image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg"
       }
     ];
 
-    const RADIUS = 100; // meters
-    const map = L.map('map').setView([54.9784, -1.6174], 8);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    let map, userLat = 0, userLon = 0, markers = [];
 
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
@@ -55,49 +118,74 @@
       return R * c;
     }
 
-    function updateStories(userLat, userLon) {
+    function updateStories() {
+      const search = document.getElementById('searchBar').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+      const distance = document.getElementById('distanceFilter').value;
       const storyList = document.getElementById('stories');
       storyList.innerHTML = '';
 
-      stories.forEach(story => {
-        const distance = getDistance(userLat, userLon, story.latitude, story.longitude);
-        const isUnlocked = distance <= RADIUS;
+      stories.forEach((story, index) => {
+        const dist = getDistance(userLat, userLon, story.latitude, story.longitude);
+        const isUnlocked = !distance || dist <= distance;
+        const matchSearch = story.title.toLowerCase().includes(search) || story.content.toLowerCase().includes(search);
+        const matchCategory = !category || story.category === category;
 
-        const div = document.createElement('div');
-        div.className = `story ${isUnlocked ? 'unlocked' : 'locked'}`;
-        div.innerHTML = `
-          <h2>${story.title}</h2>
-          <img src="${story.image}" alt="${story.title}">
-          <p>${isUnlocked ? story.content : 'You are too far from this location to unlock the story.'}</p>
-        `;
-        storyList.appendChild(div);
+        if (matchSearch && matchCategory && (!distance || isUnlocked)) {
+          const div = document.createElement('div');
+          div.className = `story ${isUnlocked ? '' : 'locked'}`;
+          div.innerHTML = `
+            <h2>${story.title}</h2>
+            <small><em>${story.category}</em></small>
+            <img src="${story.image}" alt="${story.title}">
+            <p>${isUnlocked ? story.content : 'You are too far from this location to unlock the story.'}</p>
+          `;
+          div.onclick = () => map.setView([story.latitude, story.longitude], 14);
+          storyList.appendChild(div);
+        }
       });
     }
 
-    function addMarkers(userLat, userLon) {
-      const userMarker = L.marker([userLat, userLon]).addTo(map).bindPopup('You are here').openPopup();
-
-      stories.forEach(story => {
+    function addMarkers() {
+      markers.forEach(m => map.removeLayer(m));
+      markers = stories.map((story, index) => {
         const marker = L.marker([story.latitude, story.longitude]).addTo(map);
-        marker.bindPopup(`<strong>${story.title}</strong>`);
+        marker.bindPopup(`<strong>${story.title}</strong><br>${story.category}`);
+        return marker;
       });
     }
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        map.setView([lat, lon], 12);
-        addMarkers(lat, lon);
-        updateStories(lat, lon);
-      }, () => {
-        alert('Geolocation failed. Please enable it to unlock stories.');
-        updateStories(0, 0);
-      });
-    } else {
-      alert('Geolocation is not supported by your browser.');
+    function initializeMap() {
+      map = L.map('map').setView([54.9784, -1.6174], 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          userLat = pos.coords.latitude;
+          userLon = pos.coords.longitude;
+          L.marker([userLat, userLon]).addTo(map).bindPopup('You are here').openPopup();
+          map.setView([userLat, userLon], 12);
+          addMarkers();
+          updateStories();
+        }, () => {
+          alert('Geolocation failed.');
+          addMarkers();
+          updateStories();
+        });
+      } else {
+        alert('Geolocation not supported.');
+        addMarkers();
+        updateStories();
+      }
     }
+
+    document.getElementById('searchBar').addEventListener('input', updateStories);
+    document.getElementById('categoryFilter').addEventListener('change', updateStories);
+    document.getElementById('distanceFilter').addEventListener('input', updateStories);
+
+    initializeMap();
   </script>
 </body>
 </html>
-
