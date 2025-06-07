@@ -67,4 +67,3 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function toRad(value) {
   return value * Math.PI / 180;
 }
-```
