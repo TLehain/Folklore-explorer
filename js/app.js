@@ -13,6 +13,30 @@ storyManager = new StoryManager();
 await locationManager.initialize();
 await storyManager.loadStories();
 });
+// Add near the top with other managers
+let walksManager;
+
+// Update the DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded', async () => {
+  locationManager = new LocationManager();
+  storyManager = new StoryManager();
+  walksManager = new WalksManager(); // Add this line
+  
+  await locationManager.initialize();
+  await storyManager.loadStories();
+  await walksManager.loadWalks(); // Add this line
+});
+
+// Update the startGuidedWalk function
+function startGuidedWalk() {
+  const walkId = document.getElementById('walkFilter').value;
+  if (!walkId) {
+    showError('Please select a walk first');
+    return;
+  }
+  
+  walksManager.startWalk(walkId);
+}
 // Global error function
 window.showError = function(message) {
 const errorDiv = document.createElement('div');
