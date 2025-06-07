@@ -1,4 +1,3 @@
-```javascript
 let userLat = 0;
 let userLng = 0;
 
