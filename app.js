@@ -147,10 +147,14 @@ function applyFilters() {
           .addTo(map)
           .bindPopup(story.title);
 
-        div.onclick = () => {
-          map.setView([story.latitude, story.longitude], 13);
-          marker.openPopup();
-        };
+     div.onclick = () => {
+  if (distance <= 100) {
+    window.location.href = `story.html?id=${story.id}`;
+  } else {
+    map.setView([story.latitude, story.longitude], 13);
+    marker.openPopup();
+  }
+};
 
         container.appendChild(div);
       });
