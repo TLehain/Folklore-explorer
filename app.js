@@ -75,6 +75,28 @@ function showError(message) {
 initializeLocation();
 
 function loadStories() {
+  function showLoading() {
+  const container = document.getElementById('stories');
+  container.innerHTML = '<div class="loading">Loading stories...</div>';
+}
+
+function loadStories() {
+  showLoading();
+  
+  fetch('stories.json')
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to load stories');
+      return res.json();
+    })
+    .then(stories => {
+      // ... rest of your existing loadStories code
+    })
+    .catch(error => {
+      console.error('Error loading stories:', error);
+      const container = document.getElementById('stories');
+      container.innerHTML = '<div class="error">Failed to load stories. Please refresh the page.</div>';
+    });
+}
   fetch('stories.json')
     .then(res => res.json())
     .then(stories => {
