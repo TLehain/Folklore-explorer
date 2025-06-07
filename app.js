@@ -31,6 +31,12 @@ function initializeLocation() {
         .bindPopup("You are here")
         .openPopup();
       loadStories();
+       startLocationWatching(); 
+    },
+    error => handleLocationError(error),
+    options
+  );
+}
     },
     error => handleLocationError(error),
     options
