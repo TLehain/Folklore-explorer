@@ -1,0 +1,19 @@
+[
+  {
+    "title": "The Lambton Worm",
+    "latitude": 54.8520,
+    "longitude": -1.5711,
+    "category": "Fae Creature",
+    "content": "In the 14th century, young John Lambton skipped church one Sunday to fish in the River Wear...",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Penshaw_Monument.jpg"
+  },
+  {
+    "title": "The Grey Lady of Bamburgh Castle",
+    "latitude": 55.6090,
+    "longitude": -1.7109,
+    "category": "Ghost Story",
+    "content": "High on the windswept cliffs of Northumberland stands Bamburgh Castle...",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg"
+  }
+]
+
