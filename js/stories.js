@@ -4,25 +4,10 @@ class StoryManager {
     this.markers = [];
     this.filteredStories = [];
   }
-
-  async loadStories() {
-    try {
-      const response = await fetch('stories.json');
-      if (!response.ok) throw new Error('Failed to load stories');
-      this.stories = await response.json();
-      window.storiesData = this.stories; // Make globally available
-      this.filteredStories = [...this.stories];
-      this.displayStories();
-      this.addMarkersToMap();
-    } catch (error) {
-      console.error('Error loading stories:', error);
-      window.showError('Failed to load stories');
-    }
-  }
-openStory(storyId) {
+  openStory(storyId) {
   const story = this.stories.find(s => s.id === storyId);
   if (!story) return;
-  
+    
   // Check if user is within 100m of the story location
   if (window.locationManager) {
     const distance = window.locationManager.getDistance(
