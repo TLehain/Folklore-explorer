@@ -1,75 +1,158 @@
-// app.js
+let stories = [];
+let map, userMarker;
 
-// List of folklore stories with their coordinates
-const stories = [
-  {
-    title: "The Lambton Worm",
-    latitude: 54.8520,
-    longitude: -1.5711,
-    content: "In the 14th century, young John Lambton skipped church one Sunday to fish in the River Wear...",
-    image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Penshaw_Monument.jpg"
-  },
-  {
-    title: "The Grey Lady of Bamburgh Castle",
-    latitude: 55.6090,
-    longitude: -1.7109,
-    content: "High on the windswept cliffs of Northumberland stands Bamburgh Castle...",
-    image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg"
+fetch("stories.json")
+  .then((res) => res.json())
+  .then((data) => {
+    stories = data;
+    initMap();
+  });
+
+function initMap() {
+  map = L.map("map").setView([54.97, -1.6], 7);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const userLatLng = [pos.coords.latitude, pos.coords.longitude];
+        userMarker = L.marker(userLatLng).addTo(map).bindPopup("You are here");
+        showStories(userLatLng);
+      },
+      () => alert("Location access denied.")
+    );
+  } else {
+    alert("Geolocation not supported.");
   }
-];
+}
 
-// Function to calculate distance between two coordinates using the Haversine formula
 function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // Earth's radius in meters
-  const φ1 = lat1 * Math.PI/180;
-  const φ2 = lat2 * Math.PI/180;
-  const Δφ = (lat2 - lat1) * Math.PI/180;
-  const Δλ = (lon2 - lon1) * Math.PI/180;
+  const R = 6371e3;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
 
-  return R * c; // Distance in meters
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Function to display stories
-function displayStories(position) {
-  const userLat = position.coords.latitude;
-  const userLon = position.coords.longitude;
-  const container = document.getElementById('stories');
-  container.innerHTML = '';
+function showStories(userCoords) {
+  const container = document.getElementById("storyList");
+  container.innerHTML = "";
 
-  stories.forEach(story => {
-    const distance = getDistance(userLat, userLon, story.latitude, story.longitude);
-    const isUnlocked = distance <= 100; // 100 meters proximity
-    const storyDiv = document.createElement('div');
-    storyDiv.className = 'story ' + (isUnlocked ? 'unlocked' : 'locked');
+  stories.forEach((story) => {
+    const distance = getDistance(
+      userCoords[0],
+      userCoords[1],
+      story.latitude,
+      story.longitude
+    );
 
-    const title = document.createElement('h2');
+    const div = document.createElement("div");
+    div.className = "story" + (distance > 100 ? " locked" : "");
+
+    const title = document.createElement("h2");
     title.textContent = story.title;
-    storyDiv.appendChild(title);
+    div.appendChild(title);
 
-    const img = document.createElement('img');
+    const category = document.createElement("p");
+    category.textContent = `Category: ${story.category}`;
+    div.appendChild(category);
+
+    const img = document.createElement("img");
     img.src = story.image;
-    img.alt = story.title;
-    img.style.maxWidth = '100%';
-    storyDiv.appendChild(img);
+    div.appendChild(img);
 
-    const content = document.createElement('p');
-    content.textContent = isUnlocked ? story.content : 'You are too far from this location to unlock the story.';
-    storyDiv.appendChild(content);
+    const content = document.createElement("p");
+    content.innerHTML =
+      distance <= 100
+        ? story.content
+        : '<span>🔒 Story locked. Move closer to unlock.</span>';
+    div.appendChild(content);
 
-    container.appendChild(storyDiv);
+    const marker = L.marker([story.latitude, story.longitude])
+      .addTo(map)
+      .bindPopup(story.title);
+
+    div.onclick = () => {
+      map.setView([story.latitude, story.longitude], 13);
+      marker.openPopup();
+    };
+
+    container.appendChild(div);
   });
 }
 
-// Get user's current position
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(displayStories, error => {
-    alert('Error getting location: ' + error.message);
+function applyFilters() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const category = document.getElementById("categoryFilter").value;
+  const distanceInput = parseFloat(document.getElementById("distanceFilter").value);
+
+  if (!navigator.geolocation) return;
+
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const userCoords = [pos.coords.latitude, pos.coords.longitude];
+
+    const container = document.getElementById("storyList");
+    container.innerHTML = "";
+
+    stories
+      .filter((s) => {
+        const matchTitle = s.title.toLowerCase().includes(search);
+        const matchCat = category === "" || s.category === category;
+        const matchDist =
+          isNaN(distanceInput) ||
+          getDistance(userCoords[0], userCoords[1], s.latitude, s.longitude) <= distanceInput;
+        return matchTitle && matchCat && matchDist;
+      })
+      .forEach((story) => {
+        const distance = getDistance(
+          userCoords[0],
+          userCoords[1],
+          story.latitude,
+          story.longitude
+        );
+
+        const div = document.createElement("div");
+        div.className = "story" + (distance > 100 ? " locked" : "");
+
+        const title = document.createElement("h2");
+        title.textContent = story.title;
+        div.appendChild(title);
+
+        const category = document.createElement("p");
+        category.textContent = `Category: ${story.category}`;
+        div.appendChild(category);
+
+        const img = document.createElement("img");
+        img.src = story.image;
+        div.appendChild(img);
+
+        const content = document.createElement("p");
+        content.innerHTML =
+          distance <= 100
+            ? story.content
+            : '<span>🔒 Story locked. Move closer to unlock.</span>';
+        div.appendChild(content);
+
+        const marker = L.marker([story.latitude, story.longitude])
+          .addTo(map)
+          .bindPopup(story.title);
+
+        div.onclick = () => {
+          map.setView([story.latitude, story.longitude], 13);
+          marker.openPopup();
+        };
+
+        container.appendChild(div);
+      });
   });
-} else {
-  alert('Geolocation is not supported by your browser.');
 }
