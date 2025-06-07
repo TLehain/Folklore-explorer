@@ -117,11 +117,12 @@ function loadStories() {
 
         const div = document.createElement('div');
         div.className = 'story' + (dist > 0.1 ? ' locked' : '');
-        div.innerHTML = `
-          <h3>${story.title}</h3>
-          <p><strong>Category:</strong> ${story.category}</p>
-          <p>${dist <= 0.1 ? story.content.substring(0, 80) + '...' : '🔒 Locked. Get closer to unlock this story.'}</p>
-        `;
+    div.innerHTML = `
+  <h3>${story.title}</h3>
+  <p><strong>Category:</strong> ${story.category}</p>
+  <p><strong>Distance:</strong> ${dist <= 0.1 ? 'Here!' : Math.round(dist * 1000) + 'm away'}</p>
+  <p>${dist <= 0.1 ? story.content.substring(0, 80) + '...' : '🔒 Locked. Get closer to unlock this story.'}</p>
+`;
         div.onclick = () => {
           if (dist <= 0.1) {
             window.location.href = `story.html?id=${story.id}`;
