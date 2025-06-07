@@ -1,3 +1,4 @@
+```json
 [
   {
     "id": "lambton-worm",
@@ -5,7 +6,7 @@
     "latitude": 54.852,
     "longitude": -1.5711,
     "category": "Fae Creature",
-    "content": "In the 14th century, young John Lambton skipped church one Sunday to fish in the River Wear...",
+    "content": "In the 14th century, young John Lambton skipped church...",
     "image": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Penshaw_Monument.jpg",
     "audio": "audio/lambton-worm.mp3"
   },
@@ -15,10 +16,9 @@
     "latitude": 55.609,
     "longitude": -1.7109,
     "category": "Ghost Story",
-    "content": "High on the windswept cliffs of Northumberland stands Bamburgh Castle...",
+    "content": "High on the windswept cliffs of Northumberland...",
     "image": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg",
     "audio": "audio/grey-lady-bamburgh.mp3"
   }
 ]
-
-
+```
