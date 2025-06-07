@@ -20,7 +20,7 @@
     "audio": "audio/grey-lady-bamburgh.mp3"
   },
 {
-    "id": "Rachael-Lehain",
+    "id": "Scary Rachael",
     "title": "Scary Rachael",
     "latitude": 54.787,
     "longitude": -1.638,
@@ -28,5 +28,15 @@
     "content": "In the 21st century, there was a scary person called Rachael",
     "image": "image/rachael.jpg",
     "audio": "audio/rachael.mp3"
+  }, 
+  {
+    "id": "The Bog Faeries",
+    "title": "The Bog Faeries",
+    "latitude": 52.193,
+    "longitude": -2.699,
+    "category": "Fae Creature",
+    "content": "In the 21st century, there was a scary bog faerie called Amy and she was tres tres slimy",
+    "image": "image/amy.jpg",
+    "audio": "audio/amy.mp3"
   } 
 ]
