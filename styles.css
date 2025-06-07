@@ -114,3 +114,113 @@ button {
   from { transform: translateX(-50%) translateY(20px); opacity: 0; }
   to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
+
+/* Walk Progress Styles */
+.walk-progress {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #2e5939;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #2e5939);
+  transition: width 0.5s ease;
+}
+
+.end-walk-btn {
+  background-color: #ff6b6b;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.end-walk-btn:hover {
+  background-color: #ff5252;
+}
+
+/* Waypoint Instruction Styles */
+.waypoint-instruction {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.instruction-content h4 {
+  margin: 0 0 10px 0;
+  color: #fff;
+}
+
+.instruction-content p {
+  margin: 0 0 10px 0;
+  font-style: italic;
+}
+
+.waypoint-status {
+  font-weight: bold;
+}
+
+/* Walk Intro Styles */
+.walk-intro-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  text-align: center;
+}
+
+.walk-intro-content h3 {
+  color: #2e5939;
+  margin-bottom: 15px;
+}
+
+.walk-details {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.dismiss-btn {
+  background-color: #4CAF50;
+  margin-top: 15px;
+}
+
+.dismiss-btn:hover {
+  background-color: #45a049;
+}
+
+/* Waypoint Marker Styles */
+.waypoint-marker {
+  background: #2e5939;
+  border: 3px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.waypoint-number {
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Success notification */
+.success-notification {
+  animation: slideIn 0.3s ease-out;
+}
