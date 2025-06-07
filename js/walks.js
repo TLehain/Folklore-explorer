@@ -103,7 +103,7 @@ class WalksManager {
     }
 
     const waypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
-    const story = this.getStoryById(waypoint.storyId);
+    const story = this.getStoryByIdSync(waypoint.storyId);
     
     if (!story) {
       console.error('Story not found:', waypoint.storyId);
@@ -327,22 +327,9 @@ class WalksManager {
     }
   }
 
-  getStoryById(storyId) {
-    // This will need to interface with your stories data
-    // For now, we'll fetch from stories.json
-    return new Promise((resolve) => {
-      fetch('stories.json')
-        .then(res => res.json())
-        .then(stories => {
-          const story = stories.find(s => s.id === storyId);
-          resolve(story);
-        });
-    });
-  }
-
-  // Synchronous version for immediate use
+  // Fixed: Use synchronous access to stories data
   getStoryByIdSync(storyId) {
-    // You'll need to ensure stories are loaded first
+    // Access the globally available stories data
     if (window.storiesData) {
       return window.storiesData.find(s => s.id === storyId);
     }
