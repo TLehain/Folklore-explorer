@@ -4,12 +4,75 @@ let userLng = 0;
 const map = L.map('map').setView([54.5, -1.5], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-navigator.geolocation.getCurrentPosition(pos => {
-  userLat = pos.coords.latitude;
-  userLng = pos.coords.longitude;
-  L.marker([userLat, userLng]).addTo(map).bindPopup("You are here").openPopup();
+function initializeLocation() {
+  if (!navigator.geolocation) {
+    showError("Geolocation is not supported by this browser.");
+    // Use default location (center of UK)
+    userLat = 54.5;
+    userLng = -1.5;
+    loadStories();
+    return;
+  }
+
+  const options = {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 300000
+  };
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      userLat = position.coords.latitude;
+      userLng = position.coords.longitude;
+      L.marker([userLat, userLng]).addTo(map)
+        .bindPopup("You are here")
+        .openPopup();
+      loadStories();
+    },
+    error => handleLocationError(error),
+    options
+  );
+}
+
+function handleLocationError(error) {
+  const messages = {
+    1: "Location access denied. Using default location. Enable location services for full experience.",
+    2: "Location unavailable. Using default location.",
+    3: "Location request timed out. Using default location."
+  };
+  
+  const message = messages[error.code] || "Location error. Using default location.";
+  showError(message);
+  
+  // Use default location
+  userLat = 54.5;
+  userLng = -1.5;
   loadStories();
-});
+}
+
+function showError(message) {
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-notification';
+  errorDiv.textContent = message;
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff6b6b;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  `;
+  document.body.appendChild(errorDiv);
+  
+  setTimeout(() => errorDiv.remove(), 5000);
+}
+
+// Replace the direct geolocation call with:
+initializeLocation();
 
 function loadStories() {
   fetch('stories.json')
