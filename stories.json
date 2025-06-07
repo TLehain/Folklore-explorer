@@ -18,7 +18,7 @@
     "content": "High on the windswept cliffs of Northumberland...",
     "image": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg",
     "audio": "audio/grey-lady-bamburgh.mp3"
-  }
+  },
 {
     "id": "Rachael-Lehain",
     "title": "Scary Rachael",
@@ -28,9 +28,5 @@
     "content": "In the 21st century, there was a scary person called Rachael",
     "image": "https://en.wikipedia.org/wiki/Pig#/media/File:Pig_farm_Vampula_1.jpg",
     "audio": ""
-  }
-
-
-
-  
+  }, 
 ]
