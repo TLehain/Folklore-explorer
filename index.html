@@ -2,18 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Folklore Explorer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .story { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #map { height: 50vh; width: 100%; }
+    .story-list { padding: 1rem; }
+    .story { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
     .locked { background-color: #f9f9f9; }
     .unlocked { background-color: #e0ffe0; }
+    img { max-width: 100%; border-radius: 8px; }
   </style>
 </head>
 <body>
-  <h1>Folklore Explorer</h1>
-  <div id="stories"></div>
+  <div id="map"></div>
+  <div class="story-list" id="stories"></div>
 
-  <script src="app.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const stories = [
+      {
+        title: "The Lambton Worm",
+        latitude: 54.8520,
+        longitude: -1.5711,
+        content: "In the 14th century, young John Lambton skipped church one Sunday...",
+        image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Penshaw_Monument.jpg"
+      },
+      {
+        title: "The Grey Lady of Bamburgh Castle",
+        latitude: 55.6090,
+        longitude: -1.7109,
+        content: "High on the windswept cliffs of Northumberland stands Bamburgh Castle...",
+        image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bamburgh_Castle.jpg"
+      }
+    ];
+
+    const RADIUS = 100; // meters
+    const map = L.map('map').setView([54.9784, -1.6174], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const toRad = x => x * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function updateStories(userLat, userLon) {
+      const storyList = document.getElementById('stories');
+      storyList.innerHTML = '';
+
+      stories.forEach(story => {
+        const distance = getDistance(userLat, userLon, story.latitude, story.longitude);
+        const isUnlocked = distance <= RADIUS;
+
+        const div = document.createElement('div');
+        div.className = `story ${isUnlocked ? 'unlocked' : 'locked'}`;
+        div.innerHTML = `
+          <h2>${story.title}</h2>
+          <img src="${story.image}" alt="${story.title}">
+          <p>${isUnlocked ? story.content : 'You are too far from this location to unlock the story.'}</p>
+        `;
+        storyList.appendChild(div);
+      });
+    }
+
+    function addMarkers(userLat, userLon) {
+      const userMarker = L.marker([userLat, userLon]).addTo(map).bindPopup('You are here').openPopup();
+
+      stories.forEach(story => {
+        const marker = L.marker([story.latitude, story.longitude]).addTo(map);
+        marker.bindPopup(`<strong>${story.title}</strong>`);
+      });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        map.setView([lat, lon], 12);
+        addMarkers(lat, lon);
+        updateStories(lat, lon);
+      }, () => {
+        alert('Geolocation failed. Please enable it to unlock stories.');
+        updateStories(0, 0);
+      });
+    } else {
+      alert('Geolocation is not supported by your browser.');
+    }
+  </script>
 </body>
 </html>
+
