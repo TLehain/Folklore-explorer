@@ -1,4 +1,4 @@
-```javascript
+
 const params = new URLSearchParams(window.location.search);
 const storyId = params.get("id");
 
@@ -23,4 +23,3 @@ fetch("stories.json")
       </audio>
     `;
   });
-```
