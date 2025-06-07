@@ -2,41 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Folklore Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folklore Map</title>
   <link rel="stylesheet" href="styles.css" />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-pxbYxC6S8WcZVhNSCzZzF9x+A4OQvV+3aD+zVGPzYdM="
-    crossorigin=""
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
   <header>
-    <h1>🧭 Folklore Explorer</h1>
+    <h1>🗺️ Folklore Map</h1>
   </header>
-
-  <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search stories..." />
+  <div id="searchFilters">
+    <input type="text" id="searchBar" placeholder="Search stories..." />
     <select id="categoryFilter">
       <option value="">All Categories</option>
       <option value="Ghost Story">Ghost Story</option>
       <option value="Folk Tale">Folk Tale</option>
       <option value="Fae Creature">Fae Creature</option>
     </select>
-    <input type="number" id="distanceFilter" placeholder="Distance (meters)" />
-    <button onclick="applyFilters()">Apply Filters</button>
   </div>
-
   <div id="map"></div>
-  <div id="storyList"></div>
-
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-pMprSKkn7EV+gAiwpYDn8EJHjHGHMOvZ8svkN4Qc+3s="
-    crossorigin=""
-  ></script>
+  <div id="stories"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
   <script src="app.js"></script>
 </body>
 </html>
