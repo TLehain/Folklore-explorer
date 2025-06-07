@@ -77,3 +77,36 @@ button {
   from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
   to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
+#modeSelector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  background-color: #d3e8d0;
+}
+
+.mode-btn {
+  padding: 12px 20px;
+  border: 2px solid #2e5939;
+  background-color: white;
+  color: #2e5939;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.mode-btn.active {
+  background-color: #2e5939;
+  color: white;
+}
+
+.mode-btn:hover:not(.active) {
+  background-color: #f0f8f0;
+}
+
+#walkSelector {
+  padding: 10px;
+  text-align: center;
+  background-color: #e8f5e8;
+}
