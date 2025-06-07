@@ -31,37 +31,6 @@ class StoryManager {
         <h3>${story.title}</h3>
         <p><strong>Category:</strong> ${story.category}</p>
         <p>${story.content.substring(0, 100)}...</p>
-
-     stories.forEach((story) => {
-        const distance = getDistance(
-          userCoords[0],
-          userCoords[1],
-          story.latitude,
-          story.longitude
-        );
-    
-        const div = document.createElement("div");
-        div.className = "story" + (distance > 100 ? " locked" : "");
-    
-        const title = document.createElement("h2");
-        title.textContent = story.title;
-        div.appendChild(title);
-    
-        const category = document.createElement("p");
-        category.textContent = `Category: ${story.category}`;
-        div.appendChild(category);
-    
-        const img = document.createElement("img");
-        img.src = story.image;
-        div.appendChild(img);
-    
-        const content = document.createElement("p");
-        content.innerHTML =
-          distance <= 100
-            ? story.content
-            : '<span>🔒 Story locked. Move closer to unlock.</span>';
-        div.appendChild(content);
-        
       `;
       storyDiv.onclick = () => this.openStory(story.id);
       container.appendChild(storyDiv);
