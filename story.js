@@ -18,7 +18,7 @@ fetch("stories.json")
       <img src="${story.image}" alt="${story.title}" style="max-width: 100%; border-radius: 8px;" />
       <p>${story.content}</p>
       <audio controls style="margin-top: 15px;">
-        <source src="${story.audio}" type="audio/mpeg">
+        <source src="${story.audio}" type="audio/mp3">
         Your browser does not support the audio element.
       </audio>
     `;
