@@ -1,0 +1,64 @@
+{
+  "walks": [
+    {
+      "id": "northumberland-legends",
+      "title": "Northumberland Legends Walk",
+      "description": "Explore the supernatural tales of Northumberland's ancient castles and mysterious landscapes",
+      "duration": 120,
+      "difficulty": "moderate",
+      "distance": 3.2,
+      "startLocation": {
+        "latitude": 55.609,
+        "longitude": -1.7109,
+        "name": "Bamburgh Castle Car Park"
+      },
+      "waypoints": [
+        {
+          "order": 1,
+          "storyId": "grey-lady-bamburgh",
+          "instruction": "Start at Bamburgh Castle. Look for the grey stones of the ancient fortress.",
+          "waitTime": 300
+        },
+        {
+          "order": 2,
+          "storyId": "lambton-worm",
+          "instruction": "Travel south to Penshaw Monument. Follow the winding path to the hilltop.",
+          "waitTime": 300
+        }
+      ],
+      "tags": ["supernatural", "historical", "castle"],
+      "estimatedTime": "2 hours",
+      "difficulty": "Easy to Moderate"
+    },
+    {
+      "id": "fae-creatures-tour",
+      "title": "Mystical Creatures of the Countryside",
+      "description": "Journey through ancient woodlands and boglands to discover tales of magical beings",
+      "duration": 180,
+      "difficulty": "easy",
+      "distance": 2.1,
+      "startLocation": {
+        "latitude": 54.787,
+        "longitude": -1.638,
+        "name": "Forest Trail Head"
+      },
+      "waypoints": [
+        {
+          "order": 1,
+          "storyId": "scary-rachael",
+          "instruction": "Begin at the ancient oak tree. Listen for whispers in the wind.",
+          "waitTime": 240
+        },
+        {
+          "order": 2,
+          "storyId": "bog-faeries",
+          "instruction": "Follow the wooden boardwalk across the marshland. Watch for dancing lights.",
+          "waitTime": 360
+        }
+      ],
+      "tags": ["nature", "fae", "mystery"],
+      "estimatedTime": "3 hours",
+      "difficulty": "Easy"
+    }
+  ]
+}
