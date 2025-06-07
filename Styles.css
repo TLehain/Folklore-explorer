@@ -1,78 +1,61 @@
+```css
 body {
-  background-color: #f5f5f5;
+  margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  padding: 20px;
+  background-color: #eaf4ec;
 }
 
 header {
-  background-color: #1c472f;
-  padding: 10px 20px;
+  background-color: #2e5939;
+  color: white;
+  padding: 15px;
   text-align: center;
-  font-size: 1.5em;
-  color: #cde8b0;
-  border-bottom: 2px solid #2d593e;
 }
 
 #map {
   height: 400px;
-  margin: 20px;
-  border: 4px solid #2d593e;
-  border-radius: 12px;
-}
-
-#storyList {
-  padding: 20px;
-}
-
-.story {
-  background-color: #143d2a;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  cursor: pointer;
-  border: 1px solid #2d593e;
-}
-
-.story h2 {
-  margin-top: 0;
-  color: #cde8b0;
-}
-
-.story img {
-  width: 100%;
-  max-width: 400px;
+  margin: 10px;
+  border: 2px solid #2e5939;
   border-radius: 8px;
 }
 
-.locked p {
-  font-style: italic;
-  color: #aaa;
+#searchFilters {
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  background-color: #d3e8d0;
 }
 
-.controls {
-  padding: 10px 20px;
-  background-color: #1c472f;
+#stories {
+  padding: 15px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
   justify-content: center;
 }
 
-.controls input,
-.controls select,
-.controls button {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-  outline: none;
-}
-
-button {
-  background-color: #cde8b0;
-  color: #1c472f;
+.story {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  max-width: 300px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #b8dc9f;
+.story.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button {
+  background-color: #2e5939;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
 }
