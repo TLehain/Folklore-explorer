@@ -26,7 +26,48 @@ document.addEventListener('DOMContentLoaded', async () => {
   await storyManager.loadStories();
   await walksManager.loadWalks(); // Add this line
 });
+let currentMode = 'explore';
 
+function setMode(mode) {
+  currentMode = mode;
+  // Add event listeners for search and filter
+document.addEventListener('DOMContentLoaded', async () => {
+  // ... existing code ...
+  
+  // Search and filter event listeners
+  const searchBar = document.getElementById('searchBar');
+  const categoryFilter = document.getElementById('categoryFilter');
+  
+  searchBar.addEventListener('input', () => {
+    if (storyManager) {
+      storyManager.filterStories(searchBar.value, categoryFilter.value);
+    }
+  });
+  
+  categoryFilter.addEventListener('change', () => {
+    if (storyManager) {
+      storyManager.filterStories(searchBar.value, categoryFilter.value);
+    }
+  });
+});
+  // Update button states
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.getElementById(mode + 'Mode').classList.add('active');
+  
+  // Show/hide relevant UI
+  const walkSelector = document.getElementById('walkSelector');
+  const searchFilters = document.getElementById('searchFilters');
+  
+  if (mode === 'guided') {
+    walkSelector.style.display = 'block';
+    searchFilters.style.display = 'none';
+  } else {
+    walkSelector.style.display = 'none';
+    searchFilters.style.display = 'flex';
+  }
+}
 // Update the startGuidedWalk function
 function startGuidedWalk() {
   const walkId = document.getElementById('walkFilter').value;
