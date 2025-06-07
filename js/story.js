@@ -22,4 +22,8 @@ fetch("stories.json")
         Your browser does not support the audio element.
       </audio>
     `;
+  })
+  .catch(error => {
+    console.error('Error loading story:', error);
+    document.getElementById("storyContainer").innerHTML = "<p>Error loading story.</p>";
   });
