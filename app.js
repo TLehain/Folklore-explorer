@@ -1,3 +1,6 @@
+let currentMode = 'explore';
+let currentWalk = null;
+let walkProgress = 0;
 let userLat = 0;
 let userLng = 0;
 
