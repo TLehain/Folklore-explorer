@@ -155,3 +155,58 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function toRad(value) {
   return value * Math.PI / 180;
 }
+function setMode(mode) {
+  currentMode = mode;
+  
+  // Update button states
+  document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(mode + 'Mode').classList.add('active');
+  
+  // Show/hide appropriate UI
+  if (mode === 'guided') {
+    document.getElementById('walkSelector').style.display = 'block';
+    document.getElementById('searchFilters').style.display = 'none';
+    loadWalks();
+  } else {
+    document.getElementById('walkSelector').style.display = 'none';
+    document.getElementById('searchFilters').style.display = 'flex';
+  }
+  
+  loadStories();
+}
+
+function loadWalks() {
+  // For now, create some example walks from your existing stories
+  const walks = [
+    {
+      id: 'northern-legends',
+      title: 'Northern Legends Walk',
+      stories: ['lambton-worm', 'grey-lady-bamburgh']
+    }
+  ];
+  
+  const select = document.getElementById('walkFilter');
+  select.innerHTML = '<option value="">Select a guided walk...</option>';
+  
+  walks.forEach(walk => {
+    const option = document.createElement('option');
+    option.value = walk.id;
+    option.textContent = walk.title;
+    select.appendChild(option);
+  });
+}
+
+function startGuidedWalk() {
+  const walkId = document.getElementById('walkFilter').value;
+  if (!walkId) {
+    showError('Please select a walk first');
+    return;
+  }
+  
+  // Simple implementation - just focus on first story
+  if (walkId === 'northern-legends') {
+    showError('Guided walk started! Navigate to The Lambton Worm location.');
+    // Focus map on first story
+    map.setView([54.852, -1.5711], 13);
+  }
+}
