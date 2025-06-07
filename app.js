@@ -210,3 +210,63 @@ function startGuidedWalk() {
     map.setView([54.852, -1.5711], 13);
   }
 }
+
+let proximityAlerts = new Set(); // Track which stories we've already alerted for
+let watchId = null;
+
+function startLocationWatching() {
+  if (watchId) return; // Already watching
+  
+  watchId = navigator.geolocation.watchPosition(
+    position => {
+      userLat = position.coords.latitude;
+      userLng = position.coords.longitude;
+      checkProximityAlerts();
+    },
+    error => console.warn('Location watching failed:', error),
+    { enableHighAccuracy: true }
+  );
+}
+
+function checkProximityAlerts() {
+  fetch('stories.json')
+    .then(res => res.json())
+    .then(stories => {
+      stories.forEach(story => {
+        const distance = getDistance(userLat, userLng, story.latitude, story.longitude);
+        const alertKey = story.id + '-close';
+        
+        // Alert when user gets within 200m but hasn't been alerted yet
+        if (distance <= 0.2 && distance > 0.1 && !proximityAlerts.has(alertKey)) {
+          proximityAlerts.add(alertKey);
+          showProximityAlert(story, distance);
+        }
+      });
+    });
+}
+
+function showProximityAlert(story, distance) {
+  const alert = document.createElement('div');
+  alert.className = 'proximity-alert';
+  alert.innerHTML = `
+    <strong>📍 You're close to a story!</strong><br>
+    ${story.title} - ${Math.round(distance * 1000)}m away
+  `;
+  alert.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4CAF50;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    z-index: 1000;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease-out;
+  `;
+  
+  document.body.appendChild(alert);
+  setTimeout(() => alert.remove(), 4000);
+}
