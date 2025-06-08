@@ -53,7 +53,7 @@ class StoryManager {
       storyDiv.innerHTML = `
         <h3>${story.title} ${isUnlocked ? '' : '🔒'}</h3>
         <p><strong>Category:</strong> ${story.category}</p>
-        <p>${story.content.substring(0, 100)}...</p>
+        <p>${story.teaser.substring(0, 100)}</p>
         ${!isUnlocked ? `<p class="distance-info">Distance: ${this.getDistanceToStory(story)}m</p>` : ''}
       `;
       storyDiv.onclick = () => this.openStory(story.id);
