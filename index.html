@@ -291,8 +291,9 @@
     document.addEventListener('DOMContentLoaded', async () => {
       locationManager = new LocationManager();
       storyManager = new StoryManager();
+      window.storyManager = storyManager;
+      window.locationManager = locationManager;
       walksManager = new WalksManager();
-      
       await locationManager.initialize();
       await storyManager.loadStories();
       await walksManager.loadWalks();
