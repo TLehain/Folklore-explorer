@@ -14,12 +14,15 @@ window.map = map;
 // Initialize managers
 document.addEventListener('DOMContentLoaded', async () => {
   locationManager = new LocationManager();
+  window.locationManager = locationManager; // Add this
   storyManager = new StoryManager();
   walksManager = new WalksManager();
   
   await locationManager.initialize();
   await storyManager.loadStories();
   await walksManager.loadWalks();
+  
+});
   
   // Add event listeners for search and filter
   const searchBar = document.getElementById('searchBar');
