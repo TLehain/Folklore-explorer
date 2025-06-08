@@ -66,6 +66,14 @@
         this.userLng = 0;
         this.watchId = null;
         this.proximityAlerts = new Set();
+        if (window.storyManager && currentMode === 'explore') {
+      window.storyManager.displayStories();
+      window.storyManager.addMarkersToMap();
+    }
+  },
+  error => console.warn('Location watching failed:', error),
+  { enableHighAccuracy: true }
+);
       }
       
       async initialize() {
@@ -296,6 +304,8 @@
       walksManager = new WalksManager();
       await locationManager.initialize();
       await storyManager.loadStories();
+      window.storyManager = storyManager;
+      window.locationManager = locationManager;
       await walksManager.loadWalks();
       
       // Add event listeners
