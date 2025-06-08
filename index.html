@@ -288,16 +288,18 @@
     }
 
     // Initialize managers
-    document.addEventListener('DOMContentLoaded', async () => {
+     document.addEventListener('DOMContentLoaded', async () => {
       locationManager = new LocationManager();
       storyManager = new StoryManager();
+      walksManager = new WalksManager();
+      
+      // Make globally available immediately
       window.storyManager = storyManager;
       window.locationManager = locationManager;
-      walksManager = new WalksManager();
+      window.walksManager = walksManager;
+      
       await locationManager.initialize();
       await storyManager.loadStories();
-      window.storyManager = storyManager;
-      window.locationManager = locationManager;
       await walksManager.loadWalks();
       
       // Add event listeners
@@ -305,15 +307,11 @@
       const categoryFilter = document.getElementById('categoryFilter');
       
       searchBar.addEventListener('input', () => {
-        if (storyManager) {
-          storyManager.filterStories(searchBar.value, categoryFilter.value);
-        }
+        storyManager.filterStories(searchBar.value, categoryFilter.value);
       });
       
       categoryFilter.addEventListener('change', () => {
-        if (storyManager) {
-          storyManager.filterStories(searchBar.value, categoryFilter.value);
-        }
+        storyManager.filterStories(searchBar.value, categoryFilter.value);
       });
     });
 
