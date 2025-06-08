@@ -66,15 +66,7 @@
         this.userLng = 0;
         this.watchId = null;
         this.proximityAlerts = new Set();
-        if (window.storyManager && currentMode === 'explore') {
-      window.storyManager.displayStories();
-      window.storyManager.addMarkersToMap();
-    }
-  },
-  error => console.warn('Location watching failed:', error),
-  { enableHighAccuracy: true }
-);
-      }
+       }
       
       async initialize() {
         if (!navigator.geolocation) {
