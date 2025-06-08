@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       storyManager.filterStories(searchBar.value, categoryFilter.value);
     }
   });
-});
 
 function setMode(mode) {
   currentMode = mode;
