@@ -1,15 +1,15 @@
-// Initialize everything
-let locationManager;
-let storyManager;
-let walksManager;
-let currentMode = 'explore';
-
 // Initialize map
 const map = L.map('map').setView([54.5, -1.5], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 // Make map globally available
 window.map = map;
+
+// Initialize everything
+let locationManager;
+let storyManager;
+let walksManager;
+let currentMode = 'explore';
 
 // Initialize managers
 document.addEventListener('DOMContentLoaded', async () => {
