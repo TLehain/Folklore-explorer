@@ -118,11 +118,3 @@ class StoryManager {
     this.addMarkersToMap();
   }
 }
-
-// Refresh story lock states every 10 seconds
-setInterval(() => {
-  if (window.storyManager && currentMode === 'explore') {
-    window.storyManager.displayStories();
-    window.storyManager.addMarkersToMap();
-  }
-}, 10000);
