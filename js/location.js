@@ -69,7 +69,6 @@ checkProximityAlerts() {
     window.storyManager.addMarkersToMap();
   }
 }
-}
 getDistance(lat1, lon1, lat2, lon2) {
 const R = 6371;
 const dLat = this.toRad(lat2 - lat1);
