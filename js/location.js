@@ -64,7 +64,11 @@ error => console.warn('Location watching failed:', error),
 );
 }
 checkProximityAlerts() {
-// Move your proximity alert logic here
+  if (window.storyManager) {
+    window.storyManager.displayStories();
+    window.storyManager.addMarkersToMap();
+  }
+}
 }
 getDistance(lat1, lon1, lat2, lon2) {
 const R = 6371;
