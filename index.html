@@ -1,14 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-  <!-- Load Leaflet first -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
-  <!-- Load your JavaScript files -->
-  <script src="js/location.js"></script>
-  <script src="js/stories.js"></script>
-  <script src="js/walks.js"></script>
-  <script src="js/app.js"></script>
-  
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,8 +11,7 @@
   <header>
     <h1>🗺️ Folklore Explorer</h1>
   </header>
-  
-  <div id="modeSelector">
+   <div id="modeSelector">
     <button id="exploreMode" class="mode-btn active" onclick="setMode('explore')">
       🗺️ Explore Mode
     </button>
@@ -47,8 +37,19 @@
     </select>
   </div>
   
-  <div id="map"></div>
+  <div id="map" style="width: 100%; height: 500px;">></div>
   <div id="stories"></div>
   
+  
+  
+    <!-- Load Leaflet first -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
+  <!-- Load your JavaScript files -->
+  <script src="js/location.js"></script>
+  <script src="js/stories.js"></script>
+  <script src="js/walks.js"></script>
+  <script src="js/app.js"></script>
+ 
 </body>
 </html>
