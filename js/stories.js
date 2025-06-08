@@ -3,6 +3,22 @@ class StoryManager {
     this.stories = [];
     this.markers = [];
     this.filteredStories = [];
+    
+async loadStories() {
+  try {
+    const response = await fetch('stories.json');
+    if (!response.ok) throw new Error('Failed to load stories');
+    this.stories = await response.json();
+    window.storiesData = this.stories;
+    this.filteredStories = [...this.stories];
+    this.displayStories();
+    this.addMarkersToMap();
+  } catch (error) {
+    console.error('Error loading stories:', error);
+    window.showError('Failed to load stories');
+  }
+}
+    
   }
   openStory(storyId) {
   const story = this.stories.find(s => s.id === storyId);
@@ -85,25 +101,6 @@ addMarkersToMap() {
     this.markers.push(marker);
   });
 }
-
-  openStory(storyId) {
-    window.location.href = `story.html?id=${storyId}`;
-  }
-
-  filterStories(searchTerm, category) {
-    this.filteredStories = this.stories.filter(story => {
-      const matchesSearch = !searchTerm || 
-        story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        story.content.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = !category || story.category === category;
-      
-      return matchesSearch && matchesCategory;
-    });
-    
-    this.displayStories();
-    this.addMarkersToMap();
-  }
   // Refresh story lock states every 10 seconds
 setInterval(() => {
   if (storyManager && currentMode === 'explore') {
