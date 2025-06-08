@@ -107,7 +107,7 @@ class StoryManager {
     this.filteredStories = this.stories.filter(story => {
       const matchesSearch = !searchTerm || 
         story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        story.content.toLowerCase().includes(searchTerm.toLowerCase());
+        story.teaser.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesCategory = !category || story.category === category;
       
