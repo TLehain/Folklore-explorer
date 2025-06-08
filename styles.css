@@ -224,3 +224,12 @@ button {
 .success-notification {
   animation: slideIn 0.3s ease-out;
 }
+.story.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border: 2px dashed #ccc;
+}
+
+.story.unlocked {
+  border: 2px solid #4CAF50;
+}
