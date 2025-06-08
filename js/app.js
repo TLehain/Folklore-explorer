@@ -37,8 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   categoryFilter.addEventListener('change', () => {
     if (storyManager) {
       storyManager.filterStories(searchBar.value, categoryFilter.value);
-    }
-  });
+    });
 
 function setMode(mode) {
   currentMode = mode;
