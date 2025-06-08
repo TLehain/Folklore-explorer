@@ -15,7 +15,7 @@
       "waypoints": [
         {
           "order": 1,
-          "storyId": "grey-lady-bamburgh",
+          "storyId": "pink-lady-bamburgh",
           "instruction": "Start at Bamburgh Castle. Look for the grey stones of the ancient fortress.",
           "waitTime": 300
         },
