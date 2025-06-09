@@ -32,11 +32,27 @@ calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 sortStoriesByProximity(userLat, userLon) {
+  // Calculate distances for all stories
   this.stories.forEach(story => {
     story.distance = this.calculateDistance(userLat, userLon, story.latitude, story.longitude);
   });
+  
+  // Sort the main stories array by distance
   this.stories.sort((a, b) => a.distance - b.distance);
-  this.displayStories(this.stories);
+  
+  // Update filtered stories to maintain the same order
+  // Re-apply current filters while preserving the new proximity order
+  const searchBar = document.getElementById('searchBar');
+  const categoryFilter = document.getElementById('categoryFilter');
+  
+  if (searchBar && categoryFilter) {
+    this.filterStories(searchBar.value, categoryFilter.value);
+  } else {
+    // If no filters are active, just copy the sorted array
+    this.filteredStories = [...this.stories];
+    this.displayStories();
+    this.addMarkersToMap();
+  }
 }
   
   openStory(storyId) {
