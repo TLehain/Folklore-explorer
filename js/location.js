@@ -20,6 +20,7 @@ try {
 const position = await this.getCurrentPosition(options);
 this.userLat = position.coords.latitude;
 this.userLng = position.coords.longitude;
+this.sortStoriesByProximity();
 this.addUserMarker();
 this.startWatching();
 } catch (error) {
@@ -57,6 +58,7 @@ this.watchId = navigator.geolocation.watchPosition(
 position => {
 this.userLat = position.coords.latitude;
 this.userLng = position.coords.longitude;
+this.sortStoriesByProximity();  
 this.checkProximityAlerts();
 },
 error => console.warn('Location watching failed:', error),
@@ -83,4 +85,9 @@ return R * c;
 toRad(value) {
 return value * Math.PI / 180;
 }
+sortStoriesByProximity() {
+  if (window.storyManager) {
+    window.storyManager.sortStoriesByProximity(this.userLat, this.userLng);
+  }
+}  
 }
