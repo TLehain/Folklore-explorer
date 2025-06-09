@@ -135,6 +135,11 @@ class WalksManager {
         <div class="waypoint-status">
           <span class="distance-to-waypoint" id="distanceToWaypoint">Calculating distance...</span>
         </div>
+        <div class="waypoint-actions" id="waypointActions" style="display: none;">
+          <button onclick="walksManager.nextWaypoint()" class="next-waypoint-btn">
+            Continue to Next Waypoint →
+          </button>
+        </div>
       </div>
     `;
     
@@ -171,13 +176,22 @@ class WalksManager {
       );
       
       const distanceElement = document.getElementById('distanceToWaypoint');
-      if (distanceElement) {
-        if (distance <= 0.1) {
-          distanceElement.innerHTML = '✅ You\'re here! Story unlocked.';
-          distanceElement.style.color = '#4CAF50';
-          this.unlockWaypoint(story);
-        } else {
-          distanceElement.innerHTML = `📏 ${Math.round(distance * 1000)}m away`;
+       if (distance <= 0.1) {
+        distanceElement.innerHTML = '✅ You\'re here! Story unlocked.';
+        distanceElement.style.color = '#4CAF50';
+        this.unlockWaypoint(story);
+        // Show the next waypoint button
+        const actionsDiv = document.getElementById('waypointActions');
+        if (actionsDiv) {
+          actionsDiv.style.display = 'block';
+        }
+      } else {
+        distanceElement.innerHTML = `📏 ${Math.round(distance * 1000)}m away`;
+        // Hide the next waypoint button if not close enough
+        const actionsDiv = document.getElementById('waypointActions');
+        if (actionsDiv) {
+          actionsDiv.style.display = 'none';
+        }
         }
       }
     };
