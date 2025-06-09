@@ -33,7 +33,7 @@ calculateDistance(lat1, lon1, lat2, lon2) {
 
 sortStoriesByProximity(userLat, userLon) {
   this.stories.forEach(story => {
-    story.distance = this.calculateDistance(userLat, userLon, story.lat, story.lng);
+    story.distance = this.calculateDistance(userLat, userLon, story.latitude, story.longitude);
   });
   this.stories.sort((a, b) => a.distance - b.distance);
   this.displayStories(this.stories);
