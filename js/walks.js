@@ -193,8 +193,7 @@ class WalksManager {
           actionsDiv.style.display = 'none';
         }
         }
-      }
-    };
+        };
     
     // Update every 3 seconds
     this.distanceInterval = setInterval(updateDistance, 3000);
