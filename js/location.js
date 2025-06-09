@@ -65,11 +65,6 @@ error => console.warn('Location watching failed:', error),
 { enableHighAccuracy: true }
 );
 }
-checkProximityAlerts() {
-  if (window.storyManager) {
-    window.storyManager.displayStories();
-    window.storyManager.addMarkersToMap();
-  }
 }
 getDistance(lat1, lon1, lat2, lon2) {
 const R = 6371;
