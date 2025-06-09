@@ -360,24 +360,4 @@ class WalksManager {
     }
     return null;
     }
-     }
-  window.showSuccess = function(message) {
-  const successDiv = document.createElement('div');
-  successDiv.className = 'success-notification';
-  successDiv.textContent = message;
-  successDiv.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #4CAF50;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s ease-out;
-  `;
-  document.body.appendChild(successDiv);
-  setTimeout(() => successDiv.remove(), 4000);
 };
