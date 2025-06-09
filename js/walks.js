@@ -245,8 +245,6 @@ class WalksManager {
     this.showCurrentWaypoint();
     this.updateWalkProgress();
   }
-}
-
   showWalkProgress() {
     // Remove existing progress bar
     const existing = document.getElementById('walk-progress');
@@ -287,7 +285,7 @@ class WalksManager {
     
     document.body.appendChild(progress);
   }
-
+}
   updateWalkProgress() {
     const progressFill = document.querySelector('.progress-fill');
     const progressHeader = document.querySelector('.progress-header span:last-child');
