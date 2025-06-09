@@ -65,7 +65,6 @@ error => console.warn('Location watching failed:', error),
 { enableHighAccuracy: true }
 );
 }
-}
 getDistance(lat1, lon1, lat2, lon2) {
 const R = 6371;
 const dLat = this.toRad(lat2 - lat1);
@@ -83,6 +82,7 @@ return value * Math.PI / 180;
 sortStoriesByProximity() {
   if (window.storyManager) {
     window.storyManager.sortStoriesByProximity(this.userLat, this.userLng);
-  }
-}  
+    }
+  } 
+} 
 
