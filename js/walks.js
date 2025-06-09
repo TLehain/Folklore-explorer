@@ -244,7 +244,7 @@ class WalksManager {
   
     this.showCurrentWaypoint();
     this.updateWalkProgress();
-  }
+  
   showWalkProgress() {
     // Remove existing progress bar
     const existing = document.getElementById('walk-progress');
@@ -362,7 +362,7 @@ class WalksManager {
     return null;
   }
 }
-
+}
 // Global success message function
 window.showSuccess = function(message) {
   const successDiv = document.createElement('div');
