@@ -359,7 +359,6 @@ class WalksManager {
       return window.storiesData.find(s => s.id === storyId);
     }
     return null;
-  }
 }
 // Global success message function
 window.showSuccess = function(message) {
