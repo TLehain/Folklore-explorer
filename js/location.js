@@ -85,4 +85,4 @@ sortStoriesByProximity() {
     window.storyManager.sortStoriesByProximity(this.userLat, this.userLng);
   }
 }  
-}
+
