@@ -60,5 +60,47 @@
       "estimatedTime": "3 hours",
       "difficulty": "Easy"
     }
-  ]
+    {
+  "id": "haunting-heart-london",
+  "title": "The Haunting Heart of London",
+  "description": "Uncover the dark folklore of central London, from ghostly apparitions to monstrous serpents, as you walk the ancient streets of the City.",
+  "duration": 90,
+  "difficulty": "easy",
+  "distance": 2.1,
+  "startLocation": {
+    "latitude": 51.5153,
+    "longitude": -0.0983,
+    "name": "Old Bailey / Site of Newgate Prison"
+  },
+  "waypoints": [
+    {
+      "order": 1,
+      "storyId": "black-dog-newgate",
+      "instruction": "Begin at Old Bailey, once the site of Newgate Prison. Imagine the Black Dog stalking the dark corridors of the past.",
+      "waitTime": 300
+    },
+    {
+      "order": 2,
+      "storyId": "ghost-of-cock-lane",
+      "instruction": "Walk east along Giltspur Street and Cock Lane. Listen for ghostly knocks—you're now in 'Scratching Fanny’s' territory.",
+      "waitTime": 300
+    },
+    {
+      "order": 3,
+      "storyId": "serpent-bow-church",
+      "instruction": "Head east to St. Mary-le-Bow Church on Cheapside. Look down the crypt steps and imagine a serpent slithering below.",
+      "waitTime": 300
+    },
+    {
+      "order": 4,
+      "storyId": "bakers-dozen-devil",
+      "instruction": "Continue along Bread Street. Stop near the corner where bakers once short-changed the Devil himself.",
+      "waitTime": 300
+    }
+  ],
+  "tags": ["ghost", "urban legend", "haunting", "London"],
+  "estimatedTime": "1.5 hours",
+  "difficulty": "Easy"
+}
+     ]
 }
