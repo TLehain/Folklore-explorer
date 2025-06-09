@@ -94,4 +94,40 @@ class LocationManager {
       window.storyManager.sortStoriesByProximity(this.userLat, this.userLng);
     }
   }
+  // Add these methods to your LocationManager class:
+
+addProximityAlert(lat, lng, radius, callback, id) {
+  this.proximityAlerts.add({
+    id: id,
+    lat: lat,
+    lng: lng,
+    radius: radius, // in kilometers
+    callback: callback,
+    triggered: false
+  });
+}
+
+removeProximityAlert(id) {
+  this.proximityAlerts.forEach(alert => {
+    if (alert.id === id) {
+      this.proximityAlerts.delete(alert);
+    }
+  });
+}
+
+checkProximityAlerts() {
+  this.proximityAlerts.forEach(alert => {
+    const distance = this.getDistance(
+      this.userLat, this.userLng,
+      alert.lat, alert.lng
+    );
+    
+    if (distance <= alert.radius && !alert.triggered) {
+      alert.triggered = true;
+      alert.callback();
+    } else if (distance > alert.radius && alert.triggered) {
+      alert.triggered = false; // Reset when user leaves area
+    }
+  });
+}
 }
