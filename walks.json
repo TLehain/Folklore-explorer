@@ -44,7 +44,7 @@
       "waypoints": [
         {
           "order": 1,
-          "storyId": "scary-rachael",
+          "storyId": "monks-of-bearpark",
           "instruction": "Begin at the ancient oak tree. Listen for whispers in the wind.",
           "waitTime": 240
         },
