@@ -285,7 +285,6 @@ class WalksManager {
     
     document.body.appendChild(progress);
   }
-}
   updateWalkProgress() {
     const progressFill = document.querySelector('.progress-fill');
     const progressHeader = document.querySelector('.progress-header span:last-child');
@@ -361,7 +360,6 @@ class WalksManager {
     }
     return null;
   }
-}
 }
 // Global success message function
 window.showSuccess = function(message) {
