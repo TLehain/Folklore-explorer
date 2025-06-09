@@ -83,4 +83,4 @@ sortStoriesByProximity() {
   if (window.storyManager) {
     window.storyManager.sortStoriesByProximity(this.userLat, this.userLng);
     }
-  
+   }
