@@ -223,15 +223,29 @@ class WalksManager {
   }
 
   nextWaypoint() {
-    this.currentWaypointIndex++;
-    
-    // Remove current instruction
-    const instruction = document.getElementById('waypoint-instruction');
-    if (instruction) instruction.remove();
-    
-    this.showCurrentWaypoint();
-    this.updateWalkProgress();
+  // Check if current waypoint is completed
+  const currentWaypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
+  const currentStory = this.getStoryByIdSync(currentWaypoint.storyId);
+  
+  if (!this.completedWaypoints.has(currentStory.id)) {
+    window.showError('You must reach the waypoint location first!');
+    return;
   }
+  
+  this.currentWaypointIndex++;
+  
+  // Clear distance updates
+  if (this.distanceInterval) {
+    clearInterval(this.distanceInterval);
+  }
+  
+  // Remove current instruction
+  const instruction = document.getElementById('waypoint-instruction');
+  if (instruction) instruction.remove();
+  
+  this.showCurrentWaypoint();
+  this.updateWalkProgress();
+}
 
   showWalkProgress() {
     // Remove existing progress bar
