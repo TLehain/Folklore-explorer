@@ -42,5 +42,60 @@
     "content": "In the 21st century, there was a scary bog faerie called Amy and she was tres tres slimy. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     "image": "image/amy.jpg",
     "audio": "audio/amy.mp3"
-  } 
+  }, 
+  {
+  "id": "spring-heeled-jack",
+  "title": "Spring-heeled Jack",
+  "latitude": 51.5014,
+  "longitude": -0.1419,
+  "category": "Urban Legend",
+  "teaser": "A mysterious figure with fiery eyes and a terrifying leap haunts Victorian London.",
+  "content": "Spring-heeled Jack was first reported in the 1830s across south and central London. Described as a gaunt, devil-like man with clawed hands, blazing red eyes, and the uncanny ability to leap vast distances, Jack terrorised citizens from Clapham to the City. One of the earliest confrontations occurred near Green Park, when a young woman claimed Jack attacked her with metallic claws and vanished over a 9-foot wall. Though sightings waned, his legend lived on, spawning a mix of fear, fascination, and penny dreadful stories across Victorian society.",
+  "image": "image/spring_heeled_jack.jpg",
+  "audio": "audio/spring-heeled-jack.mp3"
+},
+{
+  "id": "black-dog-newgate",
+  "title": "The Black Dog of Newgate",
+  "latitude": 51.5153,
+  "longitude": -0.0983,
+  "category": "Ghost Story",
+  "teaser": "A spectral hound haunts the cells of Old Newgate Prison, seeking revenge.",
+  "content": "The story dates back to the reign of Henry III, when a scholar was wrongly imprisoned in the infamous Newgate Prison near what is now Old Bailey. Starved and ultimately killed by fellow inmates, a monstrous black dog was soon seen stalking the prison halls. It’s said to be the scholar’s avenging spirit, picking off his murderers one by one. The legend of the Black Dog grew, warning new prisoners to beware their deeds inside those cursed walls. The prison’s dark history cemented its spectral reputation for centuries.",
+  "image": "image/black_dog_newgate.jpg",
+  "audio": "audio/black-dog-newgate.mp3"
+},
+{
+  "id": "ghost-of-cock-lane",
+  "title": "The Ghost of Cock Lane",
+  "latitude": 51.5174,
+  "longitude": -0.1080,
+  "category": "Ghost Story",
+  "teaser": "Knocks in the night and ghostly accusations stir 18th-century London.",
+  "content": "In 1762, Cock Lane near St Paul’s Cathedral was the scene of one of London’s most notorious hauntings. The ghost of Fanny Lynes, who allegedly died from smallpox—or possibly poison—was said to haunt the house of her former lover William Kent. Locals reported ghostly rappings, chilling moans, and public séances. The case gained nationwide attention, and even Dr. Samuel Johnson investigated. Eventually, it was discovered to be a hoax staged by a young girl under pressure. Still, the ‘Scratching Fanny’ of Cock Lane lives on in London folklore.",
+  "image": "image/cock_lane.jpg",
+  "audio": "audio/ghost-cock-lane.mp3"
+},
+{
+  "id": "serpent-bow-church",
+  "title": "The Serpent of St. Mary-le-Bow",
+  "latitude": 51.5134,
+  "longitude": -0.0944,
+  "category": "Fae Creature",
+  "teaser": "A dragon-like beast once lurked beneath a famous church in Cheapside.",
+  "content": "St. Mary-le-Bow, known for its Bow Bells, once hid a dark secret beneath its crypt. According to medieval legends, a giant serpent or dragon had taken residence in the undercroft, frightening parishioners and snatching animals from nearby streets. Eventually, a brave knight, inspired by tales from the Continent, descended into the church’s depths. After a ferocious battle beneath the arches, the beast was slain. Some say its bones remained buried within the church foundations for generations, warding off evil from Cheapside.",
+  "image": "image/st_mary_bow_serpent.jpg",
+  "audio": "audio/serpent-st-mary-bow.mp3"
+},
+{
+  "id": "bakers-dozen-devil",
+  "title": "The Baker’s Dozen and the Devil of Bread Street",
+  "latitude": 51.5139,
+  "longitude": -0.0937,
+  "category": "Fae Creature",
+  "teaser": "When a greedy baker tries to cheat, the devil himself comes to claim his due.",
+  "content": "In the heart of old London on Bread Street, a baker was known for cheating his customers by selling less than a full dozen. One day, a mysterious old man—rumoured to be the devil in disguise—requested a dozen loaves. The baker gave only eleven. The next morning, the oven roared uncontrollably and the baker’s face appeared scorched into the wall, where it supposedly remained for decades. This eerie event birthed the term 'Baker’s Dozen' as other bakers feared divine retribution and began giving thirteen instead of twelve, just to be safe.",
+  "image": "image/bread_street_baker.jpg",
+  "audio": "audio/bakers-dozen-devil.mp3"
+}
 ]
