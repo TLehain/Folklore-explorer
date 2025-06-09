@@ -233,6 +233,42 @@ button {
 .story.unlocked {
   border: 2px solid #4CAF50;
 }
+/* Next Waypoint Button Styles */
+.waypoint-actions {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.next-waypoint-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-height: 44px; /* Touch-friendly */
+}
+
+.next-waypoint-btn:hover {
+  background-color: #45a049;
+}
+
+.next-waypoint-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Mobile styling for the button */
+@media screen and (max-width: 768px) {
+  .next-waypoint-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+  }
+}
 /* Mobile Responsive Styles */
 @media screen and (max-width: 768px) {
   /* Reduce map height on mobile */
