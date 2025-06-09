@@ -85,9 +85,4 @@ return R * c;
 toRad(value) {
 return value * Math.PI / 180;
 }
-sortStoriesByProximity() {
-  if (window.storyManager) {
-    window.storyManager.sortStoriesByProximity(this.userLat, this.userLng);
-  }
-}  
 }
