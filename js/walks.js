@@ -360,7 +360,7 @@ class WalksManager {
     }
     return null;
     }
-  
+     }
   window.showSuccess = function(message) {
   const successDiv = document.createElement('div');
   successDiv.className = 'success-notification';
