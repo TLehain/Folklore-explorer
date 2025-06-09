@@ -56,7 +56,20 @@ class StoryManager {
         <p>${story.teaser.substring(0, 100)}</p>
         ${!isUnlocked ? `<p class="distance-info">Distance: ${this.getDistanceToStory(story)}m</p>` : ''}
       `;
-      storyDiv.onclick = () => this.openStory(story.id);
+      // Better touch handling for mobile
+storyDiv.addEventListener('click', (e) => {
+  e.preventDefault();
+  this.openStory(story.id);
+});
+
+// Add touch feedback
+storyDiv.addEventListener('touchstart', () => {
+  storyDiv.style.transform = 'scale(0.98)';
+});
+
+storyDiv.addEventListener('touchend', () => {
+  storyDiv.style.transform = 'scale(1)';
+});
       container.appendChild(storyDiv);
     });
   }
