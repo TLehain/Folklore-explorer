@@ -95,7 +95,7 @@ class StoryManager {
           <strong>${story.title} ${isUnlocked ? '' : '🔒'}</strong><br>
           <em>${story.category}</em><br>
           ${isUnlocked ? 
-            `<button onclick="storyManager.openStory('${story.id}')">Read Story</button>` :
+            `<button onclick="storyManager.openStory('${story.id}')" style="padding: 10px 15px; font-size: 14px; min-height: 44px;">Read Story</button>` :
             `<p>🔒 Come within 100m to unlock<br>Distance: ${this.getDistanceToStory(story)}m</p>`
           }
         `);
