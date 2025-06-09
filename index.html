@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Folklore Map</title>
+  <title>Folklore Explorer</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -11,8 +11,10 @@
 <body>
   <header>
     <h1>🗺️ Folklore Explorer</h1>
+    <div class="subtitle">Discover the magic hidden in your landscape</div>
   </header>
-   <div id="modeSelector">
+  
+  <div id="modeSelector">
     <button id="exploreMode" class="mode-btn active" onclick="setMode('explore')">
       🗺️ Explore Mode
     </button>
@@ -29,21 +31,19 @@
   </div>
   
   <div id="searchFilters">
-    <input type="text" id="searchBar" placeholder="Search stories..." />
+    <input type="text" id="searchBar" placeholder="🔍 Search stories and legends..." />
     <select id="categoryFilter">
       <option value="">All Categories</option>
-      <option value="Ghost Story">Ghost Story</option>
-      <option value="Folk Tale">Folk Tale</option>
-      <option value="Fae Creature">Fae Creature</option>
+      <option value="Ghost Story">👻 Ghost Story</option>
+      <option value="Folk Tale">📖 Folk Tale</option>
+      <option value="Fae Creature">🧚 Fae Creature</option>
     </select>
   </div>
   
-  <div id="map" style="width: 100%; height: 500px;">></div>
+  <div id="map" style="width: 100%; height: 500px;"></div>
   <div id="stories"></div>
   
-  
-  
-    <!-- Load Leaflet first -->
+  <!-- Load Leaflet first -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   
   <!-- Load your JavaScript files -->
