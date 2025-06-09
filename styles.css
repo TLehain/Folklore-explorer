@@ -233,3 +233,76 @@ button {
 .story.unlocked {
   border: 2px solid #4CAF50;
 }
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  /* Reduce map height on mobile */
+  #map {
+    height: 250px;
+    margin: 5px;
+  }
+  
+  /* Stack search filters vertically */
+  #searchFilters {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  #searchFilters input, #searchFilters select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Improve story card layout */
+  #stories {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .story {
+    max-width: 100%;
+    margin: 0;
+  }
+    /* Add this inside the @media screen and (max-width: 768px) block */
+#modeSelector {
+  padding: 10px;
+  gap: 8px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+/* Walk selector improvements */
+#walkSelector {
+  padding: 8px;
+}
+
+#walkSelector select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+}
+
+@media screen and (max-width: 480px) {
+  /* Even smaller map for very small screens */
+  #map {
+    height: 200px;
+    margin: 3px;
+  }
+  
+  /* Reduce header padding */
+  header {
+    padding: 10px;
+  }
+  
+  header h1 {
+    font-size: 1.5em;
+  }
+}
