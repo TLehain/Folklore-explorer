@@ -49,6 +49,7 @@ class LocationManager {
   }
 
   handleLocationError(error) {
+    console.error('Geolocation error', error);
     const messages = {
       1: "Location access denied. Using default location.",
       2: "Location unavailable. Using default location.",
