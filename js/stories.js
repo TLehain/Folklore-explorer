@@ -19,7 +19,26 @@ class StoryManager {
       window.showError('Failed to load stories');
     }
   }
+  
+calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
+sortStoriesByProximity(userLat, userLon) {
+  this.stories.forEach(story => {
+    story.distance = this.calculateDistance(userLat, userLon, story.lat, story.lng);
+  });
+  this.stories.sort((a, b) => a.distance - b.distance);
+  this.displayStories(this.stories);
+}
+  
   openStory(storyId) {
     const story = this.stories.find(s => s.id === storyId);
     if (!story) return;
