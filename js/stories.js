@@ -71,7 +71,7 @@ class StoryManager {
           </audio>
         </div>
         <div class="modal-footer">
-          <button onclick="storyManager.closeStoryModal()" class="continue-btn">Continue Walk</button>
+          <button onclick="storyManager.closeStoryModal()" class="continue-btn">Close Story</button>
         </div>
       </div>
     `;
