@@ -339,18 +339,20 @@ sortStoriesByProximity(userLat, userLon) {
     });
   }
 
-  filterStories(searchTerm, category) {
-    this.filteredStories = this.stories.filter(story => {
-      const matchesSearch = !searchTerm || 
-        story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        story.teaser.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = !category || story.category === category;
-      
-      return matchesSearch && matchesCategory;
-    });
+// Improved filterStories method that preserves proximity order
+filterStories(searchTerm, category) {
+  this.filteredStories = this.stories.filter(story => {
+    const matchesSearch = !searchTerm || 
+      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      story.teaser.toLowerCase().includes(searchTerm.toLowerCase());
     
-    this.displayStories();
-    this.addMarkersToMap();
-  }
+    const matchesCategory = !category || story.category === category;
+    
+    return matchesSearch && matchesCategory;
+  });
+  
+  // The filtered stories will maintain the proximity order from the original sorted array
+  this.displayStories();
+  this.addMarkersToMap();
+}
 }
