@@ -244,7 +244,7 @@ class WalksManager {
   
     this.showCurrentWaypoint();
     this.updateWalkProgress();
-  
+    }
   showWalkProgress() {
     // Remove existing progress bar
     const existing = document.getElementById('walk-progress');
