@@ -371,6 +371,8 @@ completeWalk() {
     return null;
     }
   
+// In your walks.js file, replace the showRouteToWaypoint method with this:
+
 showRouteToWaypoint(story) {
   if (!window.locationManager) return;
   
@@ -382,7 +384,7 @@ showRouteToWaypoint(story) {
   const userLat = window.locationManager.userLat;
   const userLng = window.locationManager.userLng;
   
-  // Add routing control
+  // Enhanced routing configuration for mobile compatibility
   this.currentRoute = L.Routing.control({
     waypoints: [
       L.latLng(userLat, userLng),
@@ -392,13 +394,63 @@ showRouteToWaypoint(story) {
     addWaypoints: false,
     createMarker: function() { return null; }, // Hide route markers
     router: L.Routing.osrmv1({
-    profile: 'foot' // This sets it to walking
+      serviceUrl: 'https://router.project-osrm.org/route/v1', // Explicit HTTPS URL
+      profile: 'foot', // Walking routes
+      timeout: 30000, // Increased timeout for mobile
+      polylinePrecision: 5
     }),
     lineOptions: {
       styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
-    }
-  }).addTo(window.map);
-}
+    },
+    show: false, // Hide the routing panel to avoid mobile display issues
+    createMarker: function() { return null; },
+    // Mobile-specific error handling
+    routeWhileDragging: false,
+    fitSelectedRoutes: true,
+    plan: L.Routing.plan([
+      L.latLng(userLat, userLng),
+      L.latLng(story.latitude, story.longitude)
+    ], {
+      createMarker: function() { return null; },
+      routeWhileDragging: false
+    })
+  });
 
-  
+  // Add error handling for mobile
+  this.currentRoute.on('routesfound', function(e) {
+    console.log('Route found successfully');
+  });
+
+  this.currentRoute.on('routingerror', function(e) {
+    console.error('Routing error:', e);
+    window.showError('Unable to calculate route. Please navigate manually.');
+    
+    // Fallback: Just show a straight line
+    if (this.currentRoute) {
+      window.map.removeControl(this.currentRoute);
+    }
+    
+    // Draw a simple polyline instead
+    const polyline = L.polyline([
+      [userLat, userLng],
+      [story.latitude, story.longitude]
+    ], {
+      color: '#ff6b6b',
+      weight: 3,
+      opacity: 0.7,
+      dashArray: '10, 10'
+    }).addTo(window.map);
+    
+    // Store for cleanup
+    this.fallbackLine = polyline;
+  }.bind(this));
+
+  // Add to map with error handling
+  try {
+    this.currentRoute.addTo(window.map);
+  } catch (error) {
+    console.error('Failed to add routing control:', error);
+    window.showError('Routing temporarily unavailable. Please navigate manually.');
+  }
+}
 };
