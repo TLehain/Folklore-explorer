@@ -5,6 +5,7 @@ class WalksManager {
     this.currentWaypointIndex = 0;
     this.walkStarted = false;
     this.completedWaypoints = new Set();
+    this.currentRoute = null;
   }
 
   async loadWalks() {
