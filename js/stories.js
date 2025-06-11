@@ -78,12 +78,13 @@ sortStoriesByProximity(userLat, userLon) {
     this.showStoryModal(story);
   }
 
+  // ENHANCED VERSION - Replace the existing showStoryModal method with this
   showStoryModal(story) {
     // Remove existing modal if any
     const existingModal = document.getElementById('story-modal');
     if (existingModal) existingModal.remove();
 
-    // Create modal
+    // Create modal with improved image handling
     const modal = document.createElement('div');
     modal.id = 'story-modal';
     modal.className = 'story-modal';
@@ -92,18 +93,34 @@ sortStoriesByProximity(userLat, userLon) {
       <div class="modal-content">
         <div class="modal-header">
           <h2>${story.title}</h2>
-          <button class="close-btn" onclick="storyManager.closeStoryModal()">×</button>
+          <button class="close-btn" onclick="storyManager.closeStoryModal()" aria-label="Close story">×</button>
         </div>
         <div class="modal-body">
           <p><strong>Category:</strong> ${story.category}</p>
-          <img src="${story.image}" alt="${story.title}" style="max-width: 100%; border-radius: 8px; margin: 15px 0;" />
+          <div class="story-image-container">
+            <picture>
+              <source srcset="${story.image.replace('.jpg', '.webp')}" type="image/webp">
+              <img 
+                src="${story.image}" 
+                alt="${story.title} - ${story.category} folklore story" 
+                class="story-image"
+                loading="lazy"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+              />
+            </picture>
+            <div class="image-error" style="display: none;">
+              <p>📸 Image unavailable</p>
+            </div>
+          </div>
           <div class="story-content">
             ${story.content}
           </div>
-          <audio controls style="margin-top: 15px; width: 100%;">
-            <source src="${story.audio}" type="audio/mp3">
-            Your browser does not support the audio element.
-          </audio>
+          <div class="audio-container">
+            <audio controls preload="none" aria-label="Audio narration of ${story.title}">
+              <source src="${story.audio}" type="audio/mp3">
+              <p>Your browser does not support the audio element. <a href="${story.audio}">Download the audio file</a>.</p>
+            </audio>
+          </div>
         </div>
         <div class="modal-footer">
           <button onclick="storyManager.closeStoryModal()" class="continue-btn">Close Story</button>
@@ -111,7 +128,7 @@ sortStoriesByProximity(userLat, userLon) {
       </div>
     `;
 
-    // Add modal styles
+    // Enhanced modal styles
     modal.style.cssText = `
       position: fixed;
       top: 0;
@@ -127,11 +144,7 @@ sortStoriesByProximity(userLat, userLon) {
     `;
 
     document.body.appendChild(modal);
-    
-    // Add CSS styles for modal components
-    this.addModalStyles();
-    
-    // Prevent body scroll
+    this.addEnhancedModalStyles();
     document.body.style.overflow = 'hidden';
   }
 
@@ -143,12 +156,12 @@ sortStoriesByProximity(userLat, userLon) {
     }
   }
 
-  addModalStyles() {
-    // Check if styles already exist
-    if (document.getElementById('modal-styles')) return;
+  // ENHANCED VERSION - Replace the existing addModalStyles method with this
+  addEnhancedModalStyles() {
+    if (document.getElementById('enhanced-modal-styles')) return;
 
     const style = document.createElement('style');
-    style.id = 'modal-styles';
+    style.id = 'enhanced-modal-styles';
     style.textContent = `
       .modal-backdrop {
         position: absolute;
@@ -199,11 +212,13 @@ sortStoriesByProximity(userLat, userLon) {
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
       }
 
-      .close-btn:hover {
+      .close-btn:hover, .close-btn:focus {
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
+        outline: 2px solid white;
       }
 
       .modal-body {
@@ -212,10 +227,50 @@ sortStoriesByProximity(userLat, userLon) {
         flex: 1;
       }
 
+      /* Enhanced image container */
+      .story-image-container {
+        margin: 15px 0;
+        text-align: center;
+      }
+
+      .story-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        /* Maintain aspect ratio */
+        object-fit: cover;
+        /* Set max dimensions for consistency */
+        max-height: 400px;
+      }
+
+      .image-error {
+        background: #f0f0f0;
+        padding: 40px;
+        border-radius: 8px;
+        color: #666;
+        font-style: italic;
+      }
+
       .story-content {
         line-height: 1.6;
         margin: 15px 0;
         text-align: justify;
+      }
+
+      /* Enhanced audio container */
+      .audio-container {
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+      }
+
+      .audio-container audio {
+        width: 100%;
+        height: 40px;
+        margin: 0;
       }
 
       .modal-footer {
@@ -233,17 +288,21 @@ sortStoriesByProximity(userLat, userLon) {
         font-size: 16px;
         cursor: pointer;
         font-weight: bold;
+        transition: background-color 0.2s;
+        min-height: 44px; /* Touch target size */
       }
 
-      .continue-btn:hover {
+      .continue-btn:hover, .continue-btn:focus {
         background-color: #45a049;
+        outline: 2px solid #2e5939;
       }
 
-      /* Mobile responsive */
+      /* Mobile responsive enhancements */
       @media screen and (max-width: 768px) {
         .modal-content {
           margin: 10px;
           max-height: 95vh;
+          max-width: calc(100vw - 20px);
         }
         
         .modal-header {
@@ -256,7 +315,45 @@ sortStoriesByProximity(userLat, userLon) {
         
         .modal-header h2 {
           font-size: 1.3em;
+          line-height: 1.2;
         }
+
+        .story-image {
+          max-height: 250px;
+          width: 100%;
+          object-fit: cover;
+        }
+
+        .story-content {
+          font-size: 16px; /* Prevent zoom on iOS */
+          text-align: left; /* Better for mobile reading */
+        }
+
+        .audio-container {
+          margin: 15px 0;
+          padding: 10px;
+        }
+      }
+
+      /* High DPI display optimization */
+      @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        .story-image {
+          image-rendering: -webkit-optimize-contrast;
+          image-rendering: crisp-edges;
+        }
+      }
+
+      /* Accessibility improvements */
+      @media (prefers-reduced-motion: reduce) {
+        .continue-btn, .close-btn {
+          transition: none;
+        }
+      }
+
+      /* Focus management for keyboard navigation */
+      .modal-content:focus-within .close-btn:focus {
+        outline: 2px solid #4CAF50;
+        outline-offset: 2px;
       }
     `;
     
@@ -339,20 +436,20 @@ sortStoriesByProximity(userLat, userLon) {
     });
   }
 
-// Improved filterStories method that preserves proximity order
-filterStories(searchTerm, category) {
-  this.filteredStories = this.stories.filter(story => {
-    const matchesSearch = !searchTerm || 
-      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      story.teaser.toLowerCase().includes(searchTerm.toLowerCase());
+  // Improved filterStories method that preserves proximity order
+  filterStories(searchTerm, category) {
+    this.filteredStories = this.stories.filter(story => {
+      const matchesSearch = !searchTerm || 
+        story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        story.teaser.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = !category || story.category === category;
+      
+      return matchesSearch && matchesCategory;
+    });
     
-    const matchesCategory = !category || story.category === category;
-    
-    return matchesSearch && matchesCategory;
-  });
-  
-  // The filtered stories will maintain the proximity order from the original sorted array
-  this.displayStories();
-  this.addMarkersToMap();
-}
+    // The filtered stories will maintain the proximity order from the original sorted array
+    this.displayStories();
+    this.addMarkersToMap();
+  }
 }
