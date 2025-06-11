@@ -391,6 +391,9 @@ showRouteToWaypoint(story) {
     routeWhileDragging: false,
     addWaypoints: false,
     createMarker: function() { return null; }, // Hide route markers
+    router: L.Routing.osrmv1({
+    profile: 'foot' // This sets it to walking
+    }),
     lineOptions: {
       styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
     }
