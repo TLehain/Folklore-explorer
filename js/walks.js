@@ -124,6 +124,8 @@ class WalksManager {
     // Remove any existing instruction
     const existing = document.getElementById('waypoint-instruction');
     if (existing) existing.remove();
+    
+    this.showRouteToWaypoint(story);
 
     const instruction = document.createElement('div');
     instruction.id = 'waypoint-instruction';
@@ -245,6 +247,7 @@ class WalksManager {
     this.showCurrentWaypoint();
     this.updateWalkProgress();
     }
+  
   showWalkProgress() {
     // Remove existing progress bar
     const existing = document.getElementById('walk-progress');
@@ -360,4 +363,32 @@ class WalksManager {
     }
     return null;
     }
+  
+showRouteToWaypoint(story) {
+  if (!window.locationManager) return;
+  
+  // Remove existing routes
+  if (this.currentRoute) {
+    window.map.removeControl(this.currentRoute);
+  }
+  
+  const userLat = window.locationManager.userLat;
+  const userLng = window.locationManager.userLng;
+  
+  // Add routing control
+  this.currentRoute = L.Routing.control({
+    waypoints: [
+      L.latLng(userLat, userLng),
+      L.latLng(story.latitude, story.longitude)
+    ],
+    routeWhileDragging: false,
+    addWaypoints: false,
+    createMarker: function() { return null; }, // Hide route markers
+    lineOptions: {
+      styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
+    }
+  }).addTo(window.map);
+}
+
+  
 };
