@@ -1,3 +1,4 @@
+// Enhanced WalksManager with mobile-optimized UI
 class WalksManager {
   constructor() {
     this.walks = [];
@@ -8,6 +9,7 @@ class WalksManager {
     this.currentRoute = null;
     this.distanceInterval = null;
     this.fallbackLine = null;
+    this.uiPanelVisible = false;
   }
 
   async loadWalks() {
@@ -50,57 +52,115 @@ class WalksManager {
     this.walkStarted = true;
     this.completedWaypoints.clear();
     
+    this.createMobileWalkUI();
     this.showWalkIntro();
     this.showCurrentWaypoint();
-    this.showWalkProgress();
   }
 
-  showWalkIntro() {
-    const intro = document.createElement('div');
-    intro.className = 'walk-intro';
-    intro.innerHTML = `
-      <div class="walk-intro-content" style="
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        max-width: 500px;
-        text-align: center;
-      ">
-        <h3>🚶 ${this.currentWalk.title}</h3>
-        <p>${this.currentWalk.description}</p>
-        <div class="walk-details" style="margin: 20px 0;">
-          <span style="margin: 0 10px;">📏 ${this.currentWalk.distance}km</span>
-          <span style="margin: 0 10px;">⏱️ ${this.currentWalk.estimatedTime}</span>
-          <span style="margin: 0 10px;">📊 ${this.currentWalk.difficulty}</span>
+  createMobileWalkUI() {
+    // Create a single collapsible panel for all walk information
+    const walkUI = document.createElement('div');
+    walkUI.id = 'mobile-walk-ui';
+    walkUI.innerHTML = `
+      <div class="walk-header" id="walkHeader">
+        <div class="walk-title">
+          <span id="walkTitleText">🚶 ${this.currentWalk.title}</span>
+          <button class="toggle-btn" id="toggleWalkUI">▼</button>
         </div>
-        <p><strong>Starting Point:</strong> ${this.currentWalk.startLocation.name}</p>
-        <button onclick="walksManager.dismissIntro()" class="dismiss-btn" style="
-          background: #2e5939;
-          color: white;
-          padding: 12px 24px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 16px;
-          margin-top: 15px;
-        ">Start Walking!</button>
+        <div class="walk-progress-mini">
+          <div class="progress-bar-mini">
+            <div class="progress-fill-mini" id="progressFillMini"></div>
+          </div>
+          <span id="progressTextMini">0/${this.currentWalk.waypoints.length}</span>
+        </div>
+      </div>
+      
+      <div class="walk-content" id="walkContent">
+        <div id="walkIntroContent" class="content-section"></div>
+        <div id="waypointContent" class="content-section"></div>
+        <div id="routingInstructions" class="content-section"></div>
+        
+        <div class="walk-actions">
+          <button onclick="walksManager.toggleUI()" class="action-btn secondary">
+            <span id="toggleText">Hide Details</span>
+          </button>
+          <button onclick="walksManager.endWalk()" class="action-btn danger">
+            End Walk
+          </button>
+        </div>
       </div>
     `;
     
-    intro.style.cssText = `
+    // Add mobile-optimized styles
+    walkUI.style.cssText = `
       position: fixed;
-      top: 0;
+      bottom: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
+      right: 0;
+      background: white;
+      border-top: 2px solid #2e5939;
+      border-radius: 12px 12px 0 0;
+      z-index: 1500;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease;
+      max-height: 70vh;
+      overflow-y: auto;
     `;
     
-    document.body.appendChild(intro);
+    document.body.appendChild(walkUI);
+    
+    // Add event listener for toggle
+    document.getElementById('toggleWalkUI').addEventListener('click', () => {
+      this.toggleUI();
+    });
+    
+    // Start with panel collapsed on mobile
+    if (window.innerWidth <= 768) {
+      this.toggleUI();
+    }
+  }
+
+  toggleUI() {
+    const content = document.getElementById('walkContent');
+    const toggleBtn = document.getElementById('toggleWalkUI');
+    const toggleText = document.getElementById('toggleText');
+    
+    if (this.uiPanelVisible) {
+      // Hide content
+      content.style.display = 'none';
+      toggleBtn.textContent = '▲';
+      if (toggleText) toggleText.textContent = 'Show Details';
+      this.uiPanelVisible = false;
+    } else {
+      // Show content
+      content.style.display = 'block';
+      toggleBtn.textContent = '▼';
+      if (toggleText) toggleText.textContent = 'Hide Details';
+      this.uiPanelVisible = true;
+    }
+  }
+
+  showWalkIntro() {
+    const introContent = document.getElementById('walkIntroContent');
+    if (!introContent) return;
+    
+    introContent.innerHTML = `
+      <div class="intro-section">
+        <h3>📍 Getting Started</h3>
+        <p>${this.currentWalk.description}</p>
+        <div class="walk-stats">
+          <span class="stat">📏 ${this.currentWalk.distance}km</span>
+          <span class="stat">⏱️ ${this.currentWalk.estimatedTime}</span>
+          <span class="stat">📊 ${this.currentWalk.difficulty}</span>
+        </div>
+        <div class="start-location">
+          <strong>Starting Point:</strong> ${this.currentWalk.startLocation.name}
+        </div>
+        <button onclick="walksManager.dismissIntro()" class="action-btn primary" style="margin-top: 15px;">
+          Start Walking! 🚶‍♂️
+        </button>
+      </div>
+    `;
     
     // Focus map on starting location
     window.map.setView([
@@ -110,8 +170,10 @@ class WalksManager {
   }
 
   dismissIntro() {
-    const intro = document.querySelector('.walk-intro');
-    if (intro) intro.remove();
+    const introContent = document.getElementById('walkIntroContent');
+    if (introContent) {
+      introContent.style.display = 'none';
+    }
   }
 
   showCurrentWaypoint() {
@@ -125,7 +187,6 @@ class WalksManager {
     
     if (!story) {
       console.error('Story not found:', waypoint.storyId);
-      // Try to continue to next waypoint if story not found
       this.currentWaypointIndex++;
       this.showCurrentWaypoint();
       return;
@@ -134,70 +195,44 @@ class WalksManager {
     // Focus map on current waypoint
     window.map.setView([story.latitude, story.longitude], 15);
     
-    // Show waypoint instruction
-    this.showWaypointInstruction(waypoint, story);
+    // Update waypoint content
+    this.updateWaypointContent(waypoint, story);
     
-    // Add special marker for current waypoint
+    // Add waypoint marker
     this.addWaypointMarker(story, waypoint);
+    
+    // Show route
+    this.showRouteToWaypoint(story);
   }
 
-  showWaypointInstruction(waypoint, story) {
-    // Remove any existing instruction
-    const existing = document.getElementById('waypoint-instruction');
-    if (existing) existing.remove();
+  updateWaypointContent(waypoint, story) {
+    const waypointContent = document.getElementById('waypointContent');
+    if (!waypointContent) return;
     
-    // Show route to waypoint
-    this.showRouteToWaypoint(story);
-
-    const instruction = document.createElement('div');
-    instruction.id = 'waypoint-instruction';
-    instruction.className = 'waypoint-instruction';
-    instruction.innerHTML = `
-      <div class="instruction-content">
+    waypointContent.innerHTML = `
+      <div class="waypoint-section">
         <h4>📍 Waypoint ${waypoint.order}: ${story.title}</h4>
-        <p>${waypoint.instruction}</p>
+        <p class="waypoint-instruction">${waypoint.instruction}</p>
+        
         <div class="waypoint-status">
-          <span class="distance-to-waypoint" id="distanceToWaypoint">Calculating distance...</span>
-        </div>
-        <div class="waypoint-actions" id="waypointActions" style="display: none;">
-          <button onclick="walksManager.nextWaypoint()" class="next-waypoint-btn" style="
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-          ">
-            Continue to Next Waypoint →
-          </button>
+          <div class="distance-indicator">
+            <span id="distanceToWaypoint">Calculating distance...</span>
+          </div>
+          <div id="waypointActions" class="waypoint-actions" style="display: none;">
+            <button onclick="walksManager.nextWaypoint()" class="action-btn success">
+              Continue to Next Waypoint →
+            </button>
+          </div>
         </div>
       </div>
     `;
     
-    instruction.style.cssText = `
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2e5939;
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      z-index: 1500;
-      max-width: 90%;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-    
-    document.body.appendChild(instruction);
-    
     // Update distance continuously
     this.updateWaypointDistance(story);
+    this.updateProgress();
   }
 
   updateWaypointDistance(story) {
-    // Clear any existing interval
     if (this.distanceInterval) {
       clearInterval(this.distanceInterval);
     }
@@ -213,52 +248,150 @@ class WalksManager {
       );
       
       const distanceElement = document.getElementById('distanceToWaypoint');
-      if (!distanceElement) return; // Element might have been removed
+      if (!distanceElement) return;
       
       if (distance <= 0.1) {
         distanceElement.innerHTML = '✅ You\'re here! Story unlocked.';
-        distanceElement.style.color = '#4CAF50';
+        distanceElement.className = 'distance-arrived';
         this.unlockWaypoint(story);
-        // Show the next waypoint button
         const actionsDiv = document.getElementById('waypointActions');
-        if (actionsDiv) {
-          actionsDiv.style.display = 'block';
-        }
+        if (actionsDiv) actionsDiv.style.display = 'block';
       } else {
         distanceElement.innerHTML = `📏 ${Math.round(distance * 1000)}m away`;
-        distanceElement.style.color = 'white';
-        // Hide the next waypoint button if not close enough
+        distanceElement.className = 'distance-away';
         const actionsDiv = document.getElementById('waypointActions');
-        if (actionsDiv) {
-          actionsDiv.style.display = 'none';
-        }
+        if (actionsDiv) actionsDiv.style.display = 'none';
       }
     };
     
-    // Update every 3 seconds
     this.distanceInterval = setInterval(updateDistance, 3000);
-    updateDistance(); // Initial update
+    updateDistance();
   }
 
+  updateProgress() {
+    const progressFill = document.getElementById('progressFillMini');
+    const progressText = document.getElementById('progressTextMini');
+    
+    if (progressFill && progressText) {
+      const totalWaypoints = this.currentWalk.waypoints.length;
+      const completedCount = this.completedWaypoints.size;
+      const progressPercent = (completedCount / totalWaypoints) * 100;
+      
+      progressFill.style.width = progressPercent + '%';
+      progressText.textContent = `${completedCount}/${totalWaypoints}`;
+    }
+  }
+
+  showRouteToWaypoint(story) {
+    if (!window.locationManager) return;
+    
+    this.clearRoutes();
+    
+    const userLat = window.locationManager.userLat;
+    const userLng = window.locationManager.userLng;
+    
+    if (!userLat || !userLng || userLat === 0 || userLng === 0) {
+      console.warn('Invalid user location for routing');
+      return;
+    }
+    
+    try {
+      this.currentRoute = L.Routing.control({
+        waypoints: [
+          L.latLng(userLat, userLng),
+          L.latLng(story.latitude, story.longitude)
+        ],
+        routeWhileDragging: false,
+        addWaypoints: false,
+        createMarker: function() { return null; },
+        router: L.Routing.osrmv1({
+          serviceUrl: 'https://router.project-osrm.org/route/v1',
+          profile: 'foot',
+          timeout: 15000
+        }),
+        lineOptions: {
+          styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
+        },
+        show: false, // Hide the default routing panel
+        fitSelectedRoutes: true
+      });
+
+      this.currentRoute.on('routesfound', (e) => {
+        this.showRouteInstructions(e.routes[0]);
+      });
+
+      this.currentRoute.on('routingerror', (e) => {
+        console.error('Routing error:', e);
+        this.showFallbackRoute(userLat, userLng, story);
+      });
+
+      this.currentRoute.addTo(window.map);
+      
+    } catch (error) {
+      console.error('Failed to create routing control:', error);
+      this.showFallbackRoute(userLat, userLng, story);
+    }
+  }
+
+  showRouteInstructions(route) {
+    const routingContent = document.getElementById('routingInstructions');
+    if (!routingContent || !route.instructions) return;
+    
+    const distance = (route.summary.totalDistance / 1000).toFixed(1);
+    const time = Math.round(route.summary.totalTime / 60);
+    
+    let instructionsHTML = `
+      <div class="routing-section">
+        <h4>🧭 Walking Directions</h4>
+        <div class="route-summary">
+          <span>📏 ${distance}km</span>
+          <span>⏱️ ${time} min</span>
+        </div>
+        <div class="route-instructions">
+    `;
+    
+    // Show only the first few key instructions to avoid clutter
+    const keyInstructions = route.instructions.slice(0, 5);
+    keyInstructions.forEach((instruction, index) => {
+      const distanceText = instruction.distance > 0 ? ` (${Math.round(instruction.distance)}m)` : '';
+      instructionsHTML += `
+        <div class="instruction-step">
+          <span class="step-number">${index + 1}</span>
+          <span class="step-text">${instruction.text}${distanceText}</span>
+        </div>
+      `;
+    });
+    
+    if (route.instructions.length > 5) {
+      instructionsHTML += `<div class="more-instructions">... and ${route.instructions.length - 5} more steps</div>`;
+    }
+    
+    instructionsHTML += `
+        </div>
+      </div>
+    `;
+    
+    routingContent.innerHTML = instructionsHTML;
+  }
+
+  // ... (keep existing methods like unlockWaypoint, nextWaypoint, etc.)
+  
   unlockWaypoint(story) {
     if (this.completedWaypoints.has(story.id)) return;
     
     this.completedWaypoints.add(story.id);
     
-    // Clear distance updates
     if (this.distanceInterval) {
       clearInterval(this.distanceInterval);
       this.distanceInterval = null;
     }
     
-    // Show success message
     setTimeout(() => {
       this.showSuccess(`✅ Waypoint completed! Enjoy the story of ${story.title}`);
     }, 1000);
   }
 
   nextWaypoint() {
-    // Check if current waypoint is completed
     if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
       return;
     }
@@ -273,103 +406,91 @@ class WalksManager {
   
     this.currentWaypointIndex++;
   
-    // Clear distance updates
     if (this.distanceInterval) {
       clearInterval(this.distanceInterval);
       this.distanceInterval = null;
     }
   
-    // Remove current instruction
-    const instruction = document.getElementById('waypoint-instruction');
-    if (instruction) instruction.remove();
-  
     this.showCurrentWaypoint();
-    this.updateWalkProgress();
-  }
-  
-  showWalkProgress() {
-    // Remove existing progress bar
-    const existing = document.getElementById('walk-progress');
-    if (existing) existing.remove();
-
-    const progress = document.createElement('div');
-    progress.id = 'walk-progress';
-    progress.className = 'walk-progress';
-    
-    const totalWaypoints = this.currentWalk.waypoints.length;
-    const completedCount = this.completedWaypoints.size;
-    const progressPercent = (completedCount / totalWaypoints) * 100;
-    
-    progress.innerHTML = `
-      <div class="progress-header">
-        <span>🚶 ${this.currentWalk.title}</span>
-        <span>${completedCount}/${totalWaypoints} waypoints</span>
-      </div>
-      <div class="progress-bar" style="
-        width: 100%;
-        height: 8px;
-        background: #ddd;
-        border-radius: 4px;
-        margin: 10px 0;
-      ">
-        <div class="progress-fill" style="
-          width: ${progressPercent}%;
-          height: 100%;
-          background: #4CAF50;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        "></div>
-      </div>
-      <button onclick="walksManager.endWalk()" class="end-walk-btn" style="
-        background: #ff6b6b;
-        color: white;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      ">End Walk</button>
-    `;
-    
-    progress.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      z-index: 1500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      min-width: 300px;
-      text-align: center;
-    `;
-    
-    document.body.appendChild(progress);
   }
 
-  updateWalkProgress() {
-    const progressFill = document.querySelector('.progress-fill');
-    const progressHeader = document.querySelector('.progress-header span:last-child');
+  completeWalk() {
+    this.walkStarted = false;
+    this.clearRoutes();
     
-    if (progressFill && progressHeader) {
-      const totalWaypoints = this.currentWalk.waypoints.length;
-      const completedCount = this.completedWaypoints.size;
-      const progressPercent = (completedCount / totalWaypoints) * 100;
-      
-      progressFill.style.width = progressPercent + '%';
-      progressHeader.textContent = `${completedCount}/${totalWaypoints} waypoints`;
+    // Remove mobile UI
+    const walkUI = document.getElementById('mobile-walk-ui');
+    if (walkUI) walkUI.remove();
+    
+    if (this.distanceInterval) {
+      clearInterval(this.distanceInterval);
+      this.distanceInterval = null;
+    }
+    
+    this.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
+    
+    this.currentWalk = null;
+    this.currentWaypointIndex = 0;
+    this.completedWaypoints.clear();
+  }
+
+  endWalk() {
+    if (confirm('Are you sure you want to end this walk?')) {
+      this.completeWalk();
     }
   }
 
+  // ... (keep other existing methods)
+  
+  clearRoutes() {
+    if (this.currentRoute) {
+      try {
+        window.map.removeControl(this.currentRoute);
+      } catch (e) {
+        console.warn('Error removing route control:', e);
+      }
+      this.currentRoute = null;
+    }
+    
+    if (this.fallbackLine) {
+      try {
+        window.map.removeLayer(this.fallbackLine);
+      } catch (e) {
+        console.warn('Error removing fallback line:', e);
+      }
+      this.fallbackLine = null;
+    }
+  }
+
+  showFallbackRoute(userLat, userLng, story) {
+    this.clearRoutes();
+    
+    this.fallbackLine = L.polyline([
+      [userLat, userLng],
+      [story.latitude, story.longitude]
+    ], {
+      color: '#ff6b6b',
+      weight: 3,
+      opacity: 0.7,
+      dashArray: '10, 10'
+    }).addTo(window.map);
+    
+    const bounds = L.latLngBounds([
+      [userLat, userLng],
+      [story.latitude, story.longitude]
+    ]);
+    window.map.fitBounds(bounds, { padding: [20, 20] });
+    
+    window.showError('Route service unavailable - showing direct path');
+  }
+
   addWaypointMarker(story, waypoint) {
-    // Remove existing waypoint markers
     window.map.eachLayer(layer => {
       if (layer.options && layer.options.isWaypointMarker) {
         window.map.removeLayer(layer);
       }
     });
 
-    // Add new waypoint marker with custom styling
     const marker = L.marker([story.latitude, story.longitude], {
       isWaypointMarker: true,
       icon: L.divIcon({
@@ -399,145 +520,6 @@ class WalksManager {
     `);
   }
 
-  showRouteToWaypoint(story) {
-    if (!window.locationManager) return;
-    
-    // Remove existing routes
-    this.clearRoutes();
-    
-    const userLat = window.locationManager.userLat;
-    const userLng = window.locationManager.userLng;
-    
-    // Check if we have valid coordinates
-    if (!userLat || !userLng || userLat === 0 || userLng === 0) {
-      console.warn('Invalid user location for routing');
-      return;
-    }
-    
-    try {
-      // Enhanced routing configuration for mobile compatibility
-      this.currentRoute = L.Routing.control({
-        waypoints: [
-          L.latLng(userLat, userLng),
-          L.latLng(story.latitude, story.longitude)
-        ],
-        routeWhileDragging: false,
-        addWaypoints: false,
-        createMarker: function() { return null; }, // Hide route markers
-        router: L.Routing.osrmv1({
-          serviceUrl: 'https://router.project-osrm.org/route/v1',
-          profile: 'foot',
-          timeout: 15000,
-          polylinePrecision: 5
-        }),
-        lineOptions: {
-          styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
-        },
-        show: true, // Show the routing panel with directions
-        fitSelectedRoutes: true,
-        collapsible: true, // Allow users to collapse/expand directions
-        containerClassName: 'leaflet-routing-container-mobile' // Custom class for mobile styling
-      });
-
-      // Add error handling
-      this.currentRoute.on('routesfound', (e) => {
-        console.log('Route found successfully');
-      });
-
-      this.currentRoute.on('routingerror', (e) => {
-        console.error('Routing error:', e);
-        this.showFallbackRoute(userLat, userLng, story);
-      });
-
-      // Add to map
-      this.currentRoute.addTo(window.map);
-      
-    } catch (error) {
-      console.error('Failed to create routing control:', error);
-      this.showFallbackRoute(userLat, userLng, story);
-    }
-  }
-
-  showFallbackRoute(userLat, userLng, story) {
-    console.log('Showing fallback route');
-    
-    // Clear any existing route first
-    this.clearRoutes();
-    
-    // Draw a simple polyline instead
-    this.fallbackLine = L.polyline([
-      [userLat, userLng],
-      [story.latitude, story.longitude]
-    ], {
-      color: '#ff6b6b',
-      weight: 3,
-      opacity: 0.7,
-      dashArray: '10, 10'
-    }).addTo(window.map);
-    
-    // Fit the map to show both points
-    const bounds = L.latLngBounds([
-      [userLat, userLng],
-      [story.latitude, story.longitude]
-    ]);
-    window.map.fitBounds(bounds, { padding: [20, 20] });
-    
-    window.showError('Route service unavailable - showing direct path');
-  }
-
-  clearRoutes() {
-    if (this.currentRoute) {
-      try {
-        window.map.removeControl(this.currentRoute);
-      } catch (e) {
-        console.warn('Error removing route control:', e);
-      }
-      this.currentRoute = null;
-    }
-    
-    if (this.fallbackLine) {
-      try {
-        window.map.removeLayer(this.fallbackLine);
-      } catch (e) {
-        console.warn('Error removing fallback line:', e);
-      }
-      this.fallbackLine = null;
-    }
-  }
-
-  completeWalk() {
-    this.walkStarted = false;
-    
-    // Clean up routes
-    this.clearRoutes();
-    
-    // Clean up UI elements
-    ['waypoint-instruction', 'walk-progress'].forEach(id => {
-      const element = document.getElementById(id);
-      if (element) element.remove();
-    });
-    
-    // Clear intervals
-    if (this.distanceInterval) {
-      clearInterval(this.distanceInterval);
-      this.distanceInterval = null;
-    }
-    
-    // Show completion message
-    this.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
-    
-    this.currentWalk = null;
-    this.currentWaypointIndex = 0;
-    this.completedWaypoints.clear();
-  }
-
-  endWalk() {
-    if (confirm('Are you sure you want to end this walk?')) {
-      this.completeWalk();
-    }
-  }
-
-  // Access stories from the global storyManager
   getStoryByIdSync(storyId) {
     if (window.storyManager && window.storyManager.stories) {
       return window.storyManager.stories.find(s => s.id === storyId);
@@ -545,7 +527,6 @@ class WalksManager {
     return null;
   }
 
-  // Helper method for success messages
   showSuccess(message) {
     const successDiv = document.createElement('div');
     successDiv.className = 'success-notification';
@@ -559,8 +540,10 @@ class WalksManager {
       color: white;
       padding: 15px 20px;
       border-radius: 8px;
-      z-index: 1000;
+      z-index: 2000;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      max-width: 90%;
+      text-align: center;
     `;
     document.body.appendChild(successDiv);
     setTimeout(() => successDiv.remove(), 5000);
