@@ -328,27 +328,33 @@ class WalksManager {
     `);
   }
 
-  completeWalk() {
-    this.walkStarted = false;
-    
-    // Clean up UI elements
-    ['waypoint-instruction', 'walk-progress'].forEach(id => {
-      const element = document.getElementById(id);
-      if (element) element.remove();
-    });
-    
-    // Clear intervals
-    if (this.distanceInterval) {
-      clearInterval(this.distanceInterval);
-    }
-    
-    // Show completion message
-    window.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
-    
-    this.currentWalk = null;
-    this.currentWaypointIndex = 0;
-    this.completedWaypoints.clear();
+completeWalk() {
+  this.walkStarted = false;
+  
+  // Clean up routes
+  if (this.currentRoute) {
+    window.map.removeControl(this.currentRoute);
+    this.currentRoute = null;
   }
+  
+  // Clean up UI elements
+  ['waypoint-instruction', 'walk-progress'].forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.remove();
+  });
+  
+  // Clear intervals
+  if (this.distanceInterval) {
+    clearInterval(this.distanceInterval);
+  }
+  
+  // Show completion message
+  window.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
+  
+  this.currentWalk = null;
+  this.currentWaypointIndex = 0;
+  this.completedWaypoints.clear();
+}
 
   endWalk() {
     if (confirm('Are you sure you want to end this walk?')) {
