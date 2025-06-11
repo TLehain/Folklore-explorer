@@ -46,6 +46,7 @@ class LocationManager {
       .addTo(window.map)
       .bindPopup("You are here")
       .openPopup();
+    window.map.setView([this.userLat, this.userLng], 13);
   }
 
   handleLocationError(error) {
