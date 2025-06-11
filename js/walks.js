@@ -433,8 +433,10 @@ class WalksManager {
         lineOptions: {
           styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
         },
-        show: false, // Hide the routing panel
-        fitSelectedRoutes: true
+        show: true, // Show the routing panel with directions
+        fitSelectedRoutes: true,
+        collapsible: true, // Allow users to collapse/expand directions
+        containerClassName: 'leaflet-routing-container-mobile' // Custom class for mobile styling
       });
 
       // Add error handling
