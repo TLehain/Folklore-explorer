@@ -993,4 +993,162 @@ button:active {
   .story {
     padding: 16px;
   }
+  /* Story Modal Styles */
+.story-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.story-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  max-height: 80vh;
+  width: 90%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInScale 0.3s ease-out;
+}
+
+.story-modal-header {
+  background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.story-modal-header h2 {
+  margin: 0;
+  font-family: 'Crimson Text', serif;
+  font-size: 1.5em;
+}
+
+.close-story-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.close-story-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.story-modal-body {
+  padding: 20px;
+  max-height: 50vh;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.story-category-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--sage-medium), var(--sage-dark));
+  color: var(--forest-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 15px;
+}
+
+.story-text {
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.story-modal-footer {
+  padding: 20px;
+  background: var(--earth-warm);
+  text-align: center;
+  border-top: 1px solid var(--sage-medium);
+}
+
+.story-btn {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+/* Animation for modal */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInScale {
+  from {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile responsive adjustments for story modal */
+@media screen and (max-width: 768px) {
+  .story-modal-content {
+    width: 95%;
+    max-height: 85vh;
+    margin: 10px;
+  }
+  
+  .story-modal-header {
+    padding: 15px;
+  }
+  
+  .story-modal-header h2 {
+    font-size: 1.3em;
+  }
+  
+  .story-modal-body {
+    padding: 15px;
+    max-height: 60vh;
+  }
+  
+  .story-modal-footer {
+    padding: 15px;
+  }
+  
+  .story-btn {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  
+  .waypoint-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .waypoint-actions .action-btn {
+    width: 100%;
+    margin: 0;
+  }
+}
 }
