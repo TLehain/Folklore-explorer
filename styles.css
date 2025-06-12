@@ -17,6 +17,7 @@
   --text-secondary: #5a6b5d;
 }
 
+/* Base Styles */
 * {
   box-sizing: border-box;
 }
@@ -30,7 +31,7 @@ body {
   min-height: 100vh;
 }
 
-/* Enhanced Header */
+/* Header Styles */
 header {
   background: linear-gradient(135deg, var(--forest-primary) 0%, var(--forest-secondary) 100%);
   color: white;
@@ -71,7 +72,7 @@ header h1 {
   z-index: 1;
 }
 
-/* Enhanced Map */
+/* Map Styles */
 #map {
   height: 450px;
   margin: 20px;
@@ -95,7 +96,60 @@ header h1 {
   z-index: 1000;
 }
 
-/* Enhanced Search Filters */
+/* Mode Selector Styles */
+#modeSelector {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  background: var(--sage-medium);
+  box-shadow: inset 0 2px 4px var(--shadow-soft);
+}
+
+.mode-btn {
+  padding: 14px 24px;
+  border: none;
+  background: white;
+  color: var(--forest-primary);
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.mode-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.5s;
+}
+
+.mode-btn:hover::before {
+  left: 100%;
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.mode-btn:hover:not(.active) {
+  background: var(--sage-light);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px var(--shadow-soft);
+}
+
+/* Search and Filter Styles */
 #searchFilters {
   padding: 20px;
   display: flex;
@@ -106,7 +160,8 @@ header h1 {
   flex-wrap: wrap;
 }
 
-#searchBar, #categoryFilter {
+#searchBar, 
+#categoryFilter {
   padding: 12px 16px;
   border: 2px solid var(--sage-dark);
   border-radius: 25px;
@@ -117,7 +172,8 @@ header h1 {
   min-width: 200px;
 }
 
-#searchBar:focus, #categoryFilter:focus {
+#searchBar:focus, 
+#categoryFilter:focus {
   outline: none;
   border-color: var(--forest-primary);
   box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
@@ -128,7 +184,35 @@ header h1 {
   color: var(--text-secondary);
 }
 
-/* Enhanced Stories Grid */
+/* Walk Selector Styles */
+#walkSelector {
+  padding: 16px 20px;
+  text-align: center;
+  background: var(--earth-warm);
+  border-bottom: 1px solid var(--sage-medium);
+}
+
+#walkSelector select,
+#walkFilter {
+  padding: 12px 16px;
+  border: 2px solid var(--sage-dark);
+  border-radius: 8px;
+  font-size: 16px;
+  background: white;
+  color: var(--text-primary);
+  margin-right: 12px;
+  min-width: 200px;
+  transition: border-color 0.3s;
+}
+
+#walkSelector select:focus,
+#walkFilter:focus {
+  outline: none;
+  border-color: var(--forest-primary);
+  box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+}
+
+/* Stories Grid Styles */
 #stories {
   padding: 30px 20px;
   display: grid;
@@ -148,6 +232,7 @@ header h1 {
   border: 1px solid var(--sage-medium);
   position: relative;
   overflow: hidden;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .story::before {
@@ -208,7 +293,7 @@ header h1 {
   box-shadow: 0 4px 20px rgba(107, 142, 90, 0.2);
 }
 
-/* Enhanced Buttons */
+/* Button Styles */
 button {
   background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
   color: white;
@@ -231,8 +316,9 @@ button:active {
   transform: translateY(0);
 }
 
-/* Status Messages */
-.loading, .error {
+/* Status Message Styles */
+.loading, 
+.error {
   text-align: center;
   padding: 40px 20px;
   font-size: 18px;
@@ -251,113 +337,9 @@ button:active {
   border: 1px solid #ffcdd2;
 }
 
-.error-notification {
+.error-notification,
+.success-notification {
   animation: slideIn 0.3s ease-out;
-}
-
-/* Enhanced Animations */
-@keyframes slideIn {
-  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.story {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* Enhanced Mode Selector */
-#modeSelector {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  padding: 20px;
-  background: var(--sage-medium);
-  box-shadow: inset 0 2px 4px var(--shadow-soft);
-}
-
-.mode-btn {
-  padding: 14px 24px;
-  border: none;
-  background: white;
-  color: var(--forest-primary);
-  border-radius: 25px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px var(--shadow-soft);
-  position: relative;
-  overflow: hidden;
-}
-
-.mode-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transition: left 0.5s;
-}
-
-.mode-btn:hover::before {
-  left: 100%;
-}
-
-.mode-btn.active {
-  background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-medium);
-}
-
-.mode-btn:hover:not(.active) {
-  background: var(--sage-light);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px var(--shadow-soft);
-}
-
-/* Enhanced  Selector */
-#walkSelector {
-  padding: 16px 20px;
-  text-align: center;
-  background: var(--earth-warm);
-  border-bottom: 1px solid var(--sage-medium);
-}
-
-#walkSelector select {
-  padding: 12px 16px;
-  border: 2px solid var(--sage-dark);
-  border-radius: 8px;
-  font-size: 16px;
-  background: white;
-  color: var(--text-primary);
-  margin-right: 12px;
-  min-width: 200px;
-  transition: border-color 0.3s;
-}
-
-#walkSelector select:focus {
-  outline: none;
-  border-color: var(--forest-primary);
-  box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
 }
 
 /* Walk Progress Styles */
@@ -395,553 +377,11 @@ button:active {
   border-radius: 8px;
 }
 
-.end-walk-btn {
-  background: linear-gradient(135deg, #e57373, #f44336);
-  font-size: 14px;
-  padding: 8px 16px;
-}
-
-.end-walk-btn:hover {
-  background: linear-gradient(135deg, #ef5350, #d32f2f);
-}
-
-/* Waypoint Instruction Styles */
-.waypoint-instruction {
-  font-family: 'Inter', sans-serif;
-}
-
-.instruction-content h4 {
-  margin: 0 0 10px 0;
-  color: #fff;
-}
-
-.instruction-content p {
-  margin: 0 0 10px 0;
-  font-style: italic;
-}
-
-.waypoint-status {
-  font-weight: bold;
-}
-
-/* Walk Intro Styles */
-.walk-intro-content {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 500px;
-  text-align: center;
-}
-
-.walk-intro-content h3 {
-  color: var(--forest-primary);
-  margin-bottom: 15px;
-}
-
-.walk-details {
-  display: flex;
-  justify-content: space-around;
-  margin: 15px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.dismiss-btn {
-  background: linear-gradient(135deg, var(--moss-accent), #4CAF50);
-  margin-top: 15px;
-}
-
-.dismiss-btn:hover {
-  background: linear-gradient(135deg, #689f49, #45a049);
-}
-
-/* Waypoint Marker Styles */
-.waypoint-marker {
-  background: var(--forest-primary);
-  border: 3px solid white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-
-.waypoint-number {
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-/* Success notification */
-.success-notification {
-  animation: slideIn 0.3s ease-out;
-}
-
-/* Next Waypoint Button Styles */
-.waypoint-actions {
-  margin-top: 15px;
-  text-align: center;
-}
-
-.next-waypoint-btn {
-  background: linear-gradient(135deg, var(--moss-accent), #4CAF50);
-  color: white;
-  border: none;
-  padding: 14px 24px;
-  border-radius: 25px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  min-height: 48px;
-  width: 100%;
-  margin-top: 16px;
-}
-
-.next-waypoint-btn:hover {
-  background: linear-gradient(135deg, #689f49, #45a049);
-}
-
-.next-waypoint-btn:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-}
-
-/* Mobile Responsive Styles */
-@media screen and (max-width: 768px) {
-  /* Enhanced mobile header */
-  header h1 {
-    font-size: 2em;
-  }
-  
-  /* Reduce map height on mobile */
-  #map {
-    height: 300px;
-    margin: 12px;
-    border-radius: 12px;
-  }
-  
-  /* Stack search filters vertically */
-  #searchFilters {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-  }
-  
-  #searchFilters input, #searchFilters select {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    font-size: 16px; /* Prevents zoom on iOS */
-    min-width: unset;
-  }
-  
-  /* Improve story card layout */
-  #stories {
-    grid-template-columns: 1fr;
-    padding: 20px 12px;
-    gap: 16px;
-  }
-  
-  .story {
-    max-width: 100%;
-    margin: 0;
-    padding: 20px;
-  }
-  
-  /* Enhanced mode selector for mobile */
-  #modeSelector {
-    padding: 16px 12px;
-    gap: 8px;
-  }
-
-  .mode-btn {
-    flex: 1;
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  /* Walk selector improvements */
-  #walkSelector {
-    padding: 12px;
-  }
-
-  #walkSelector select {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    margin-bottom: 8px;
-    margin-right: 0;
-    min-width: unset;
-  }
-
-  /* Mobile button improvements */
-  .next-waypoint-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 18px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  /* Even smaller map for very small screens */
-  #map {
-    height: 250px;
-    margin: 8px;
-  }
-  
-  /* Reduce header padding */
-  header {
-    padding: 20px 16px;
-  }
-  
-  header h1 {
-    font-size: 1.8em;
-  }
-  
-  .story {
-    padding: 16px;
-  }
-  /* Mobile-friendly routing directions */
-.leaflet-routing-container-mobile {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.leaflet-routing-container-mobile .leaflet-routing-alt {
-  padding: 10px;
-  font-size: 14px;
-}
-
-/* Make directions more readable on small screens */
-@media (max-width: 768px) {
-  .leaflet-routing-container-mobile {
-    font-size: 12px;
-    max-width: 90%;
-  }
-}
-/* Walk UI Base Styles */
+/* Walk UI Styles */
 #walk-ui {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.walk-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.walk-title span {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.toggle-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 3px;
-  transition: background-color 0.2s;
-}
-
-.toggle-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.walk-progress {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #4CAF50;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-#progressTextMini {
-  font-size: 14px;
-  font-weight: 500;
-  min-width: 40px;
-}
-
-.walk-content {
-  padding: 0;
-  max-height: 60vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.content-section {
-  padding: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.content-section:last-of-type {
-  border-bottom: none;
-}
-
-.intro-section h3,
-.waypoint-section h4,
-.routing-section h4 {
-  margin: 0 0 15px 0;
-  color: #2e5939;
-  font-size: 18px;
-}
-
-.walk-stats {
-  display: flex;
-  gap: 15px;
-  margin: 15px 0;
-  flex-wrap: wrap;
-}
-
-.stat {
-  background: #f5f5f5;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.start-location {
-  background: #e8f5e8;
-  padding: 12px;
-  border-radius: 8px;
-  border-left: 4px solid #4CAF50;
-  margin: 15px 0;
-}
-
-.waypoint-instruction {
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 15px 0;
-  border-left: 4px solid #2e5939;
-}
-
-.waypoint-status {
-  margin-top: 20px;
-}
-
-.distance-indicator {
-  text-align: center;
-  padding: 15px;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 16px;
-}
-
-.distance-away {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-}
-
-.distance-arrived {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.waypoint-actions {
-  margin-top: 15px;
-}
-
-.route-summary {
-  display: flex;
-  gap: 15px;
-  margin: 10px 0;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 6px;
-}
-
-.route-summary span {
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.route-instructions {
-  margin-top: 15px;
-}
-
-.instruction-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.instruction-step:last-child {
-  border-bottom: none;
-}
-
-.step-number {
-  background: #2e5939;
-  color: white;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.step-text {
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.more-instructions {
-  text-align: center;
-  font-style: italic;
-  color: #666;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.walk-actions {
-  padding: 20px;
-  background: #f9f9f9;
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-}
-
-.action-btn {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex: 1;
-  text-align: center;
-}
-
-.action-btn.primary {
-  background: #2e5939;
-  color: white;
-}
-
-.action-btn.primary:hover {
-  background: #1e3a26;
-}
-
-.action-btn.success {
-  background: #4CAF50;
-  color: white;
-}
-
-.action-btn.success:hover {
-  background: #45a049;
-}
-
-.action-btn.secondary {
-  background: #6c757d;
-  color: white;
-}
-
-.action-btn.secondary:hover {
-  background: #545b62;
-}
-
-.action-btn.danger {
-  background: #dc3545;
-  color: white;
-}
-
-.action-btn.danger:hover {
-  background: #c82333;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .walk-stats {
-    justify-content: center;
-  }
-  
-  .stat {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-  
-  .instruction-step {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .step-number {
-    margin-bottom: 5px;
-  }
-  
-  .walk-actions {
-    flex-direction: column;
-  }
-  
-  .action-btn {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  .action-btn:last-child {
-    margin-bottom: 0;
-  }
-}
-
-/* Smooth scrolling for content sections */
-.walk-content {
-  scroll-behavior: smooth;
-}
-
-/* Custom scrollbar for webkit browsers */
-.walk-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.walk-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.walk-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
-}
-
-.walk-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* Ensure map is not covered on mobile */
-@media (max-width: 768px) {
-  #map {
-    height: calc(100vh - 200px) !important;
-    margin-bottom: 20px;
-  }
-}
 .walk-ui-desktop {
   position: fixed;
   top: 20px;
@@ -972,24 +412,7 @@ button:active {
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-  
-#walkFilter {
-  padding: 12px 16px;
-  border: 2px solid var(--sage-dark);
-  border-radius: 8px;
-  font-size: 16px;
-  background: white;
-  color: var(--text-primary);
-  margin-right: 12px;
-  min-width: 200px;
-  transition: border-color 0.3s;
-}
 
-#walkFilter:focus {
-  outline: none;
-  border-color: var(--forest-primary);
-  box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
-}
 .walk-header {
   padding: 20px;
   background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
@@ -1026,11 +449,11 @@ button:active {
   padding: 5px;
   border-radius: 3px;
   transition: background-color 0.2s;
-  display: none; /* Hidden by default */
+  display: none;
 }
 
 .walk-ui-mobile .toggle-btn {
-  display: block; /* Show only on mobile */
+  display: block;
 }
 
 .toggle-btn:hover {
@@ -1043,31 +466,22 @@ button:active {
   gap: 15px;
 }
 
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #4CAF50;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-#progressText {
+#progressText,
+#progressTextMini {
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
+}
+
+#progressTextMini {
+  min-width: 40px;
 }
 
 .walk-content {
   max-height: calc(70vh - 100px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .walk-ui-desktop .walk-content {
@@ -1151,6 +565,7 @@ button:active {
 
 .waypoint-actions {
   margin-top: 15px;
+  text-align: center;
 }
 
 .route-summary {
@@ -1247,6 +662,16 @@ button:active {
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
+.action-btn.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.action-btn.secondary:hover {
+  background: #545b62;
+  transform: translateY(-2px);
+}
+
 .action-btn.danger {
   background: linear-gradient(135deg, #dc3545, #c82333);
   color: white;
@@ -1257,7 +682,102 @@ button:active {
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
-/* Custom scrollbar for webkit browsers */
+.end-walk-btn {
+  background: linear-gradient(135deg, #e57373, #f44336);
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.end-walk-btn:hover {
+  background: linear-gradient(135deg, #ef5350, #d32f2f);
+}
+
+.next-waypoint-btn {
+  background: linear-gradient(135deg, var(--moss-accent), #4CAF50);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-height: 48px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.next-waypoint-btn:hover {
+  background: linear-gradient(135deg, #689f49, #45a049);
+}
+
+.next-waypoint-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.dismiss-btn {
+  background: linear-gradient(135deg, var(--moss-accent), #4CAF50);
+  margin-top: 15px;
+}
+
+.dismiss-btn:hover {
+  background: linear-gradient(135deg, #689f49, #45a049);
+}
+
+/* Waypoint and Walk Specific Styles */
+.waypoint-marker {
+  background: var(--forest-primary);
+  border: 3px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.waypoint-number {
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.walk-intro-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  text-align: center;
+}
+
+.walk-intro-content h3 {
+  color: var(--forest-primary);
+  margin-bottom: 15px;
+}
+
+.walk-details {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Leaflet Routing Styles */
+.leaflet-routing-container-mobile {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.leaflet-routing-container-mobile .leaflet-routing-alt {
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* Custom Scrollbar Styles */
 .walk-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -1275,38 +795,128 @@ button:active {
   background: var(--forest-secondary);
 }
 
-/* Desktop specific adjustments */
+/* Animation Keyframes */
+@keyframes slideIn {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Desktop Specific Styles */
 @media (min-width: 769px) {
   .walk-ui-desktop {
     animation: slideInRight 0.3s ease-out;
   }
-  
-  @keyframes slideInRight {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
 }
 
-/* Mobile specific adjustments */
-@media (max-width: 768px) {
-  .walk-ui-mobile {
-    animation: slideInUp 0.3s ease-out;
+/* Tablet Responsive Styles */
+@media screen and (max-width: 768px) {
+  /* Header adjustments */
+  header h1 {
+    font-size: 2em;
   }
   
-  @keyframes slideInUp {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
+  /* Map adjustments */
+  #map {
+    height: 300px;
+    margin: 12px;
+    border-radius: 12px;
+  }
+  
+  /* Search filters stack vertically */
+  #searchFilters {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  #searchFilters input, 
+  #searchFilters select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    font-size: 16px;
+    min-width: unset;
+  }
+  
+  /* Stories grid to single column */
+  #stories {
+    grid-template-columns: 1fr;
+    padding: 20px 12px;
+    gap: 16px;
+  }
+  
+  .story {
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  /* Mode selector improvements */
+  #modeSelector {
+    padding: 16px 12px;
+    gap: 8px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  /* Walk selector improvements */
+  #walkSelector {
+    padding: 12px;
+  }
+
+  #walkSelector select,
+  #walkFilter {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 8px;
+    margin-right: 0;
+    min-width: unset;
+  }
+
+  /* Mobile walk UI */
+  .walk-ui-mobile {
+    animation: slideInUp 0.3s ease-out;
   }
   
   .walk-actions {
@@ -1315,15 +925,72 @@ button:active {
   
   .action-btn {
     width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .action-btn:last-child {
+    margin-bottom: 0;
   }
   
   .content-section {
     padding: 15px;
   }
   
-  /* Adjust map height on mobile when walk UI is present */
+  .walk-stats {
+    justify-content: center;
+  }
+  
+  .stat {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .instruction-step {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .step-number {
+    margin-bottom: 5px;
+  }
+  
+  .next-waypoint-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+  }
+
+  /* Adjust map height when walk UI is present */
   body:has(.walk-ui-mobile) #map {
     height: calc(100vh - 220px) !important;
     margin-bottom: 20px;
+  }
+
+  /* Leaflet routing mobile adjustments */
+  .leaflet-routing-container-mobile {
+    font-size: 12px;
+    max-width: 90%;
+  }
+}
+
+/* Mobile Phone Specific Styles */
+@media screen and (max-width: 480px) {
+  /* Very small map for phones */
+  #map {
+    height: 250px;
+    margin: 8px;
+  }
+  
+  /* Reduce header padding */
+  header {
+    padding: 20px 16px;
+  }
+  
+  header h1 {
+    font-size: 1.8em;
+  }
+  
+  .story {
+    padding: 16px;
   }
 }
