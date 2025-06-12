@@ -573,7 +573,7 @@ showStoryModal(story) {
       </div>
       <div class="story-modal-body">
         <div class="story-category-badge">${story.category}</div>
-        <div class="story-text">${story.story}</div>
+        <div class="story-text">${story.content}</div>
       </div>
       <div class="story-modal-footer">
         <button onclick="walksManager.closeStoryModal()" class="action-btn primary">
