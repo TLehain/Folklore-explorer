@@ -312,11 +312,14 @@ class WalksManager {
           <div class="distance-indicator">
             <span id="distanceToWaypoint">Calculating distance...</span>
           </div>
-          <div id="waypointActions" class="waypoint-actions" style="display: none;">
-            <button onclick="walksManager.nextWaypoint()" class="action-btn success">
-              Continue to Next Waypoint →
-            </button>
-          </div>
+        <div id="waypointActions" class="waypoint-actions" style="display: none;">
+          <button onclick="walksManager.viewCurrentStory()" class="action-btn primary story-btn">
+            📖 View Story
+          </button>
+          <button onclick="walksManager.nextWaypoint()" class="action-btn success">
+            Continue to Next Waypoint →
+          </button>
+        </div>
         </div>
       </div>
     `;
@@ -505,7 +508,107 @@ class WalksManager {
   
     this.showCurrentWaypoint();
   }
+viewCurrentStory() {
+  if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
+    return;
+  }
 
+  const currentWaypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
+  const currentStory = this.getStoryByIdSync(currentWaypoint.storyId);
+
+  if (!currentStory) {
+    window.showError('Story not found');
+    return;
+  }
+
+  // Check if user is at the location
+  if (!this.completedWaypoints.has(currentStory.id)) {
+    window.showError('You must reach the waypoint location first!');
+    return;
+  }
+
+  // Store walk state
+  this.storeWalkState();
+  
+  // Hide walk UI temporarily
+  this.hideWalkUI();
+  
+  // Show the story
+  this.showStoryModal(currentStory);
+}
+
+storeWalkState() {
+  // Store the current walk state so we can resume later
+  this.walkStateBeforeStory = {
+    walkId: this.currentWalk.id,
+    waypointIndex: this.currentWaypointIndex,
+    completedWaypoints: new Set(this.completedWaypoints)
+  };
+}
+
+hideWalkUI() {
+  const walkUI = document.getElementById('walk-ui');
+  if (walkUI) {
+    walkUI.style.display = 'none';
+  }
+}
+
+showWalkUI() {
+  const walkUI = document.getElementById('walk-ui');
+  if (walkUI) {
+    walkUI.style.display = 'block';
+  }
+}
+
+showStoryModal(story) {
+  // Create story modal
+  const modal = document.createElement('div');
+  modal.id = 'story-modal';
+  modal.className = 'story-modal';
+  modal.innerHTML = `
+    <div class="story-modal-content">
+      <div class="story-modal-header">
+        <h2>${story.title}</h2>
+        <button class="close-story-btn" onclick="walksManager.closeStoryModal()">✕</button>
+      </div>
+      <div class="story-modal-body">
+        <div class="story-category-badge">${story.category}</div>
+        <div class="story-text">${story.story}</div>
+      </div>
+      <div class="story-modal-footer">
+        <button onclick="walksManager.closeStoryModal()" class="action-btn primary">
+          🚶 Return to Walk
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Add escape key listener
+  this.modalKeyHandler = (e) => {
+    if (e.key === 'Escape') {
+      this.closeStoryModal();
+    }
+  };
+  document.addEventListener('keydown', this.modalKeyHandler);
+}
+
+closeStoryModal() {
+  const modal = document.getElementById('story-modal');
+  if (modal) {
+    modal.remove();
+  }
+  
+  // Remove escape key listener
+  if (this.modalKeyHandler) {
+    document.removeEventListener('keydown', this.modalKeyHandler);
+    this.modalKeyHandler = null;
+  }
+  
+  // Show walk UI again
+  this.showWalkUI();
+}
   completeWalk() {
     this.walkStarted = false;
     this.clearRoutes();
@@ -523,6 +626,12 @@ class WalksManager {
     if (this.resizeHandler) {
       window.removeEventListener('resize', this.resizeHandler);
       this.resizeHandler = null;
+    }
+    // Clean up story modal state
+    this.walkStateBeforeStory = null;
+    if (this.modalKeyHandler) {
+      document.removeEventListener('keydown', this.modalKeyHandler);
+      this.modalKeyHandler = null;
     }
     
     this.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
