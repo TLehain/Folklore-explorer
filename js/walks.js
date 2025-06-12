@@ -1,4 +1,4 @@
-// Enhanced WalksManager with mobile-optimized UI
+// Enhanced WalksManager with mobile-optimized UI - FIXED VERSION
 class WalksManager {
   constructor() {
     this.walks = [];
@@ -9,7 +9,7 @@ class WalksManager {
     this.currentRoute = null;
     this.distanceInterval = null;
     this.fallbackLine = null;
-    this.uiPanelVisible = false;
+    this.uiPanelVisible = true; // Default to true for desktop
   }
 
   async loadWalks() {
@@ -27,6 +27,11 @@ class WalksManager {
 
   populateWalkSelector() {
     const select = document.getElementById('walkFilter');
+    if (!select) {
+      console.error('walkFilter element not found');
+      return;
+    }
+    
     select.innerHTML = '<option value="">Select a guided walk...</option>';
     
     this.walks.forEach(walk => {
@@ -42,8 +47,11 @@ class WalksManager {
   }
 
   startWalk(walkId) {
+    console.log('Starting walk:', walkId); // Debug log
+    
     this.currentWalk = this.getWalkById(walkId);
     if (!this.currentWalk) {
+      console.error('Walk not found:', walkId);
       window.showError('Walk not found');
       return;
     }
@@ -52,20 +60,30 @@ class WalksManager {
     this.walkStarted = true;
     this.completedWaypoints.clear();
     
+    // Set initial UI visibility based on screen size
+    this.uiPanelVisible = window.innerWidth > 768;
+    
     this.createWalkUI();
     this.showWalkIntro();
     this.showCurrentWaypoint();
   }
 
   createWalkUI() {
+    console.log('Creating walk UI'); // Debug log
+    
     // Remove any existing walk UI
     const existingUI = document.getElementById('walk-ui');
-    if (existingUI) existingUI.remove();
+    if (existingUI) {
+      console.log('Removing existing UI');
+      existingUI.remove();
+    }
 
     // Create responsive walk UI that adapts to screen size
     const walkUI = document.createElement('div');
     walkUI.id = 'walk-ui';
     walkUI.className = this.getWalkUIClass();
+    
+    console.log('Walk UI class:', walkUI.className); // Debug log
     
     walkUI.innerHTML = `
       <div class="walk-header" id="walkHeader">
@@ -95,16 +113,29 @@ class WalksManager {
     `;
     
     document.body.appendChild(walkUI);
+    console.log('Walk UI appended to body'); // Debug log
     
     // Add event listeners
     this.addWalkUIEventListeners();
     
     // Set initial state based on screen size
     this.updateUIForScreenSize();
+    
+    // Force visibility for desktop
+    if (window.innerWidth > 768) {
+      walkUI.style.display = 'block';
+      walkUI.style.position = 'fixed';
+      walkUI.style.top = '20px';
+      walkUI.style.right = '20px';
+      walkUI.style.zIndex = '1500';
+      console.log('Desktop UI positioned and made visible');
+    }
   }
 
   getWalkUIClass() {
-    return window.innerWidth <= 768 ? 'walk-ui-mobile' : 'walk-ui-desktop';
+    const className = window.innerWidth <= 768 ? 'walk-ui-mobile' : 'walk-ui-desktop';
+    console.log('UI Class determined:', className, 'Width:', window.innerWidth); // Debug log
+    return className;
   }
 
   addWalkUIEventListeners() {
@@ -112,37 +143,65 @@ class WalksManager {
     const toggleBtn = document.getElementById('toggleWalkUI');
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {
+        console.log('Toggle button clicked');
         this.toggleUI();
       });
     }
     
     // Handle window resize
-    window.addEventListener('resize', () => {
+    const resizeHandler = () => {
+      console.log('Window resized to:', window.innerWidth);
       this.updateUIForScreenSize();
-    });
+    };
+    
+    // Remove existing listener if it exists
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    
+    this.resizeHandler = resizeHandler;
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   updateUIForScreenSize() {
     const walkUI = document.getElementById('walk-ui');
     const toggleBtn = document.getElementById('toggleWalkUI');
+    const walkContent = document.getElementById('walkContent');
     
-    if (!walkUI || !toggleBtn) return;
+    if (!walkUI || !toggleBtn || !walkContent) {
+      console.error('UI elements not found for resize update');
+      return;
+    }
+    
+    console.log('Updating UI for screen size:', window.innerWidth); // Debug log
     
     if (window.innerWidth <= 768) {
       // Mobile layout
       walkUI.className = 'walk-ui-mobile';
       toggleBtn.style.display = 'block';
       if (!this.uiPanelVisible) {
-        document.getElementById('walkContent').style.display = 'none';
-        this.uiPanelVisible = false;
+        walkContent.style.display = 'none';
+      } else {
+        walkContent.style.display = 'block';
       }
     } else {
       // Desktop layout
       walkUI.className = 'walk-ui-desktop';
       toggleBtn.style.display = 'none';
       // Always show content on desktop
-      document.getElementById('walkContent').style.display = 'block';
+      walkContent.style.display = 'block';
       this.uiPanelVisible = true;
+      
+      // Ensure desktop positioning
+      walkUI.style.position = 'fixed';
+      walkUI.style.top = '20px';
+      walkUI.style.right = '20px';
+      walkUI.style.bottom = 'auto';
+      walkUI.style.left = 'auto';
+      walkUI.style.width = '400px';
+      walkUI.style.zIndex = '1500';
+      
+      console.log('Desktop layout applied');
     }
   }
 
@@ -167,7 +226,10 @@ class WalksManager {
 
   showWalkIntro() {
     const introContent = document.getElementById('walkIntroContent');
-    if (!introContent) return;
+    if (!introContent) {
+      console.error('walkIntroContent element not found');
+      return;
+    }
     
     introContent.innerHTML = `
       <div class="intro-section">
@@ -188,10 +250,12 @@ class WalksManager {
     `;
     
     // Focus map on starting location
-    window.map.setView([
-      this.currentWalk.startLocation.latitude, 
-      this.currentWalk.startLocation.longitude
-    ], 14);
+    if (window.map) {
+      window.map.setView([
+        this.currentWalk.startLocation.latitude, 
+        this.currentWalk.startLocation.longitude
+      ], 14);
+    }
   }
 
   dismissIntro() {
@@ -218,7 +282,9 @@ class WalksManager {
     }
 
     // Focus map on current waypoint
-    window.map.setView([story.latitude, story.longitude], 15);
+    if (window.map) {
+      window.map.setView([story.latitude, story.longitude], 15);
+    }
     
     // Update waypoint content
     this.updateWaypointContent(waypoint, story);
@@ -232,7 +298,10 @@ class WalksManager {
 
   updateWaypointContent(waypoint, story) {
     const waypointContent = document.getElementById('waypointContent');
-    if (!waypointContent) return;
+    if (!waypointContent) {
+      console.error('waypointContent element not found');
+      return;
+    }
     
     waypointContent.innerHTML = `
       <div class="waypoint-section">
@@ -450,6 +519,12 @@ class WalksManager {
       this.distanceInterval = null;
     }
     
+    // Clean up resize listener
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
+    }
+    
     this.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
     
     this.currentWalk = null;
@@ -506,6 +581,8 @@ class WalksManager {
   }
 
   addWaypointMarker(story, waypoint) {
+    if (!window.map) return;
+    
     window.map.eachLayer(layer => {
       if (layer.options && layer.options.isWaypointMarker) {
         window.map.removeLayer(layer);
@@ -568,5 +645,27 @@ class WalksManager {
     `;
     document.body.appendChild(successDiv);
     setTimeout(() => successDiv.remove(), 5000);
+  }
+
+  // Debug method to check if walk UI is properly created
+  debugWalkUI() {
+    console.log('=== Walk UI Debug Info ===');
+    console.log('Walk started:', this.walkStarted);
+    console.log('Current walk:', this.currentWalk?.title || 'None');
+    console.log('Screen width:', window.innerWidth);
+    console.log('UI Panel visible:', this.uiPanelVisible);
+    
+    const walkUI = document.getElementById('walk-ui');
+    if (walkUI) {
+      console.log('Walk UI element found');
+      console.log('Walk UI class:', walkUI.className);
+      console.log('Walk UI style display:', walkUI.style.display);
+      console.log('Walk UI computed style:', window.getComputedStyle(walkUI).display);
+      console.log('Walk UI position:', walkUI.style.position);
+      console.log('Walk UI z-index:', walkUI.style.zIndex);
+    } else {
+      console.log('Walk UI element NOT found');
+    }
+    console.log('=== End Debug Info ===');
   }
 }
