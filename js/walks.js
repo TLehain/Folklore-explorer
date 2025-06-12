@@ -52,12 +52,16 @@ class WalksManager {
     this.walkStarted = true;
     this.completedWaypoints.clear();
     
-    this.createMobileWalkUI();
+    this.createWalkUI();
     this.showWalkIntro();
     this.showCurrentWaypoint();
   }
 
-  createMobileWalkUI() {
+  createWalkUI() {
+    // Remove any existing walk UI
+    const existingUI = document.getElementById('walk-ui');
+    if (existingUI) existingUI.remove();
+
     // Create responsive walk UI that adapts to screen size
     const walkUI = document.createElement('div');
     walkUI.id = 'walk-ui';
@@ -67,7 +71,7 @@ class WalksManager {
       <div class="walk-header" id="walkHeader">
         <div class="walk-title">
           <span id="walkTitleText">🚶 ${this.currentWalk.title}</span>
-          <button class="toggle-btn" id="toggleWalkUI" style="display: none;">▼</button>
+          <button class="toggle-btn" id="toggleWalkUI">▼</button>
         </div>
         <div class="walk-progress">
           <div class="progress-bar">
@@ -105,9 +109,12 @@ class WalksManager {
 
   addWalkUIEventListeners() {
     // Toggle button for mobile
-    document.getElementById('toggleWalkUI').addEventListener('click', () => {
-      this.toggleUI();
-    });
+    const toggleBtn = document.getElementById('toggleWalkUI');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        this.toggleUI();
+      });
+    }
     
     // Handle window resize
     window.addEventListener('resize', () => {
@@ -119,14 +126,15 @@ class WalksManager {
     const walkUI = document.getElementById('walk-ui');
     const toggleBtn = document.getElementById('toggleWalkUI');
     
-    if (!walkUI) return;
+    if (!walkUI || !toggleBtn) return;
     
     if (window.innerWidth <= 768) {
       // Mobile layout
       walkUI.className = 'walk-ui-mobile';
       toggleBtn.style.display = 'block';
       if (!this.uiPanelVisible) {
-        this.toggleUI(); // Start collapsed on mobile
+        document.getElementById('walkContent').style.display = 'none';
+        this.uiPanelVisible = false;
       }
     } else {
       // Desktop layout
@@ -137,52 +145,22 @@ class WalksManager {
       this.uiPanelVisible = true;
     }
   }
-    
-    // Add mobile-optimized styles
-    walkUI.style.cssText = `
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 2px solid #2e5939;
-      border-radius: 12px 12px 0 0;
-      z-index: 1500;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-      transition: transform 0.3s ease;
-      max-height: 70vh;
-      overflow-y: auto;
-    `;
-    
-    document.body.appendChild(walkUI);
-    
-    // Add event listener for toggle
-    document.getElementById('toggleWalkUI').addEventListener('click', () => {
-      this.toggleUI();
-    });
-    
-    // Start with panel collapsed on mobile
-    if (window.innerWidth <= 768) {
-      this.toggleUI();
-    }
-  }
 
   toggleUI() {
     const content = document.getElementById('walkContent');
     const toggleBtn = document.getElementById('toggleWalkUI');
-    const toggleText = document.getElementById('toggleText');
+    
+    if (!content || !toggleBtn) return;
     
     if (this.uiPanelVisible) {
       // Hide content
       content.style.display = 'none';
       toggleBtn.textContent = '▲';
-      if (toggleText) toggleText.textContent = 'Show Details';
       this.uiPanelVisible = false;
     } else {
       // Show content
       content.style.display = 'block';
       toggleBtn.textContent = '▼';
-      if (toggleText) toggleText.textContent = 'Hide Details';
       this.uiPanelVisible = true;
     }
   }
@@ -203,7 +181,7 @@ class WalksManager {
         <div class="start-location">
           <strong>Starting Point:</strong> ${this.currentWalk.startLocation.name}
         </div>
-        <button onclick="walksManager.dismissIntro()" class="action-btn primary" style="margin-top: 15px;">
+        <button onclick="walksManager.dismissIntro()" class="action-btn primary">
           Start Walking! 🚶‍♂️
         </button>
       </div>
@@ -316,8 +294,8 @@ class WalksManager {
   }
 
   updateProgress() {
-    const progressFill = document.getElementById('progressFillMini');
-    const progressText = document.getElementById('progressTextMini');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
     
     if (progressFill && progressText) {
       const totalWaypoints = this.currentWalk.waypoints.length;
@@ -325,7 +303,7 @@ class WalksManager {
       const progressPercent = (completedCount / totalWaypoints) * 100;
       
       progressFill.style.width = progressPercent + '%';
-      progressText.textContent = `${completedCount}/${totalWaypoints}`;
+      progressText.textContent = `${completedCount}/${totalWaypoints} waypoints`;
     }
   }
 
@@ -421,8 +399,6 @@ class WalksManager {
     routingContent.innerHTML = instructionsHTML;
   }
 
-  // ... (keep existing methods like unlockWaypoint, nextWaypoint, etc.)
-  
   unlockWaypoint(story) {
     if (this.completedWaypoints.has(story.id)) return;
     
@@ -465,8 +441,8 @@ class WalksManager {
     this.walkStarted = false;
     this.clearRoutes();
     
-    // Remove mobile UI
-    const walkUI = document.getElementById('mobile-walk-ui');
+    // Remove walk UI
+    const walkUI = document.getElementById('walk-ui');
     if (walkUI) walkUI.remove();
     
     if (this.distanceInterval) {
@@ -487,8 +463,6 @@ class WalksManager {
     }
   }
 
-  // ... (keep other existing methods)
-  
   clearRoutes() {
     if (this.currentRoute) {
       try {
