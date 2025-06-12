@@ -708,4 +708,36 @@ viewCurrentStory() {
     }
     console.log('=== End Debug Info ===');
   }
+
+  restoreWalkState() {
+  const storedState = localStorage.getItem('walkState');
+  if (!storedState) return false;
+
+  try {
+    const walkState = JSON.parse(storedState);
+    if (!walkState.isReturningFromStory) return false;
+
+    // Clear the stored state
+    localStorage.removeItem('walkState');
+
+    // Restore the walk
+    const walk = this.getWalkById(walkState.walkId);
+    if (walk) {
+      this.currentWalk = walk;
+      this.currentWaypointIndex = walkState.waypointIndex;
+      this.completedWaypoints = new Set(walkState.completedWaypoints);
+      this.walkStarted = true;
+      
+      this.createWalkUI();
+      this.dismissIntro(); // Skip intro on restore
+      this.showCurrentWaypoint();
+      
+      return true;
+    }
+  } catch (error) {
+    console.error('Error restoring walk state:', error);
+    localStorage.removeItem('walkState');
+  }
+  return false;
+}
 }
