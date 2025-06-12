@@ -527,88 +527,10 @@ viewCurrentStory() {
     return;
   }
 
-  // Store walk state
-  this.storeWalkState();
-  
-  // Hide walk UI temporarily
-  this.hideWalkUI();
-  
-  // Show the story
-  this.showStoryModal(currentStory);
+  // Navigate to story page
+  window.location.href = `story.html?id=${currentStory.id}`;
 }
 
-storeWalkState() {
-  // Store the current walk state so we can resume later
-  this.walkStateBeforeStory = {
-    walkId: this.currentWalk.id,
-    waypointIndex: this.currentWaypointIndex,
-    completedWaypoints: new Set(this.completedWaypoints)
-  };
-}
-
-hideWalkUI() {
-  const walkUI = document.getElementById('walk-ui');
-  if (walkUI) {
-    walkUI.style.display = 'none';
-  }
-}
-
-showWalkUI() {
-  const walkUI = document.getElementById('walk-ui');
-  if (walkUI) {
-    walkUI.style.display = 'block';
-  }
-}
-
-showStoryModal(story) {
-  // Create story modal
-  const modal = document.createElement('div');
-  modal.id = 'story-modal';
-  modal.className = 'story-modal';
-  modal.innerHTML = `
-    <div class="story-modal-content">
-      <div class="story-modal-header">
-        <h2>${story.title}</h2>
-        <button class="close-story-btn" onclick="walksManager.closeStoryModal()">✕</button>
-      </div>
-      <div class="story-modal-body">
-        <div class="story-category-badge">${story.category}</div>
-        <div class="story-text">${story.content}</div>
-      </div>
-      <div class="story-modal-footer">
-        <button onclick="walksManager.closeStoryModal()" class="action-btn primary">
-          🚶 Return to Walk
-        </button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  // Add escape key listener
-  this.modalKeyHandler = (e) => {
-    if (e.key === 'Escape') {
-      this.closeStoryModal();
-    }
-  };
-  document.addEventListener('keydown', this.modalKeyHandler);
-}
-
-closeStoryModal() {
-  const modal = document.getElementById('story-modal');
-  if (modal) {
-    modal.remove();
-  }
-  
-  // Remove escape key listener
-  if (this.modalKeyHandler) {
-    document.removeEventListener('keydown', this.modalKeyHandler);
-    this.modalKeyHandler = null;
-  }
-  
-  // Show walk UI again
-  this.showWalkUI();
-}
   completeWalk() {
     this.walkStarted = false;
     this.clearRoutes();
