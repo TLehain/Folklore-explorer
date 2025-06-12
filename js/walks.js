@@ -508,6 +508,7 @@ class WalksManager {
   
     this.showCurrentWaypoint();
   }
+  
 viewCurrentStory() {
   if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
     return;
@@ -521,11 +522,19 @@ viewCurrentStory() {
     return;
   }
 
-  // Check if user is at the location
   if (!this.completedWaypoints.has(currentStory.id)) {
     window.showError('You must reach the waypoint location first!');
     return;
   }
+
+  // Store walk state before navigating
+  const walkState = {
+    walkId: this.currentWalk.id,
+    waypointIndex: this.currentWaypointIndex,
+    completedWaypoints: Array.from(this.completedWaypoints),
+    isReturningFromStory: true
+  };
+  localStorage.setItem('walkState', JSON.stringify(walkState));
 
   // Navigate to story page
   window.location.href = `story.html?id=${currentStory.id}`;
