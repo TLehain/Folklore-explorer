@@ -58,20 +58,22 @@ class WalksManager {
   }
 
   createMobileWalkUI() {
-    // Create a single collapsible panel for all walk information
+    // Create responsive walk UI that adapts to screen size
     const walkUI = document.createElement('div');
-    walkUI.id = 'mobile-walk-ui';
+    walkUI.id = 'walk-ui';
+    walkUI.className = this.getWalkUIClass();
+    
     walkUI.innerHTML = `
       <div class="walk-header" id="walkHeader">
         <div class="walk-title">
           <span id="walkTitleText">🚶 ${this.currentWalk.title}</span>
-          <button class="toggle-btn" id="toggleWalkUI">▼</button>
+          <button class="toggle-btn" id="toggleWalkUI" style="display: none;">▼</button>
         </div>
-        <div class="walk-progress-mini">
-          <div class="progress-bar-mini">
-            <div class="progress-fill-mini" id="progressFillMini"></div>
+        <div class="walk-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
           </div>
-          <span id="progressTextMini">0/${this.currentWalk.waypoints.length}</span>
+          <span id="progressText">0/${this.currentWalk.waypoints.length} waypoints</span>
         </div>
       </div>
       
@@ -81,15 +83,60 @@ class WalksManager {
         <div id="routingInstructions" class="content-section"></div>
         
         <div class="walk-actions">
-          <button onclick="walksManager.toggleUI()" class="action-btn secondary">
-            <span id="toggleText">Hide Details</span>
-          </button>
           <button onclick="walksManager.endWalk()" class="action-btn danger">
             End Walk
           </button>
         </div>
       </div>
     `;
+    
+    document.body.appendChild(walkUI);
+    
+    // Add event listeners
+    this.addWalkUIEventListeners();
+    
+    // Set initial state based on screen size
+    this.updateUIForScreenSize();
+  }
+
+  getWalkUIClass() {
+    return window.innerWidth <= 768 ? 'walk-ui-mobile' : 'walk-ui-desktop';
+  }
+
+  addWalkUIEventListeners() {
+    // Toggle button for mobile
+    document.getElementById('toggleWalkUI').addEventListener('click', () => {
+      this.toggleUI();
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      this.updateUIForScreenSize();
+    });
+  }
+
+  updateUIForScreenSize() {
+    const walkUI = document.getElementById('walk-ui');
+    const toggleBtn = document.getElementById('toggleWalkUI');
+    
+    if (!walkUI) return;
+    
+    if (window.innerWidth <= 768) {
+      // Mobile layout
+      walkUI.className = 'walk-ui-mobile';
+      toggleBtn.style.display = 'block';
+      if (!this.uiPanelVisible) {
+        this.toggleUI(); // Start collapsed on mobile
+      }
+    } else {
+      // Desktop layout
+      walkUI.className = 'walk-ui-desktop';
+      toggleBtn.style.display = 'none';
+      // Always show content on desktop
+      document.getElementById('walkContent').style.display = 'block';
+      this.uiPanelVisible = true;
+    }
+  }
     
     // Add mobile-optimized styles
     walkUI.style.cssText = `
