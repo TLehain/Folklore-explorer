@@ -955,4 +955,371 @@ button:active {
     height: calc(100vh - 120px) !important;
   }
 }
+.walk-ui-desktop {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 400px;
+  max-height: calc(100vh - 40px);
+  background: white;
+  border: 2px solid var(--forest-primary);
+  border-radius: 12px;
+  z-index: 1500;
+  box-shadow: 0 8px 32px var(--shadow-medium);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.walk-ui-mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 2px solid var(--forest-primary);
+  border-radius: 12px 12px 0 0;
+  z-index: 1500;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+  max-height: 70vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.walk-header {
+  padding: 20px;
+  background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
+  color: white;
+}
+
+.walk-ui-mobile .walk-header {
+  padding: 15px 20px;
+  cursor: pointer;
+}
+
+.walk-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.walk-title span {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.walk-ui-mobile .walk-title span {
+  font-size: 16px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.walk-progress {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+#progressText {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.walk-content {
+  max-height: calc(70vh - 100px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.walk-ui-desktop .walk-content {
+  max-height: calc(100vh - 140px);
+}
+
+.content-section {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.content-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 10px;
+}
+
+.intro-section h3,
+.waypoint-section h4,
+.routing-section h4 {
+  margin: 0 0 15px 0;
+  color: var(--forest-primary);
+  font-size: 18px;
+}
+
+.walk-stats {
+  display: flex;
+  gap: 15px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.stat {
+  background: var(--sage-light);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--forest-primary);
+}
+
+.start-location {
+  background: #e8f5e8;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50;
+  margin: 15px 0;
+  font-size: 14px;
+}
+
+.waypoint-instruction {
+  background: var(--sage-light);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border-left: 4px solid var(--forest-primary);
+}
+
+.waypoint-status {
+  margin-top: 20px;
+}
+
+.distance-indicator {
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.distance-away {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.distance-arrived {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.waypoint-actions {
+  margin-top: 15px;
+}
+
+.route-summary {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+  padding: 12px;
+  background: var(--sage-light);
+  border-radius: 6px;
+}
+
+.route-summary span {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.route-instructions {
+  margin-top: 15px;
+}
+
+.instruction-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.instruction-step:last-child {
+  border-bottom: none;
+}
+
+.step-number {
+  background: var(--forest-primary);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.more-instructions {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.walk-actions {
+  padding: 20px;
+  background: var(--earth-warm);
+  text-align: center;
+}
+
+.action-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
+  color: white;
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.action-btn.success {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.action-btn.success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.action-btn.danger {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.action-btn.danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Custom scrollbar for webkit browsers */
+.walk-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.walk-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.walk-content::-webkit-scrollbar-thumb {
+  background: var(--sage-dark);
+  border-radius: 3px;
+}
+
+.walk-content::-webkit-scrollbar-thumb:hover {
+  background: var(--forest-secondary);
+}
+
+/* Desktop specific adjustments */
+@media (min-width: 769px) {
+  .walk-ui-desktop {
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Adjust map margin on desktop when walk UI is present */
+  body:has(.walk-ui-desktop) #map {
+    margin-right: 440px;
+  }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+  .walk-ui-mobile {
+    animation: slideInUp 0.3s ease-out;
+  }
+  
+  @keyframes slideInUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  .walk-actions {
+    padding: 15px;
+  }
+  
+  .action-btn {
+    width: 100%;
+  }
+  
+  .content-section {
+    padding: 15px;
+  }
+  
+  /* Adjust map height on mobile when walk UI is present */
+  body:has(.walk-ui-mobile) #map {
+    height: calc(100vh - 220px) !important;
+    margin-bottom: 20px;
+  }
+}  
 }
