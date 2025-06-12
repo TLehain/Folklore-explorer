@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await locationManager.initialize();
   await storyManager.loadStories();
   await walksManager.loadWalks();
+  walksManager.loadWalks().then(() => {
+  walksManager.restoreWalkState();
+});
   
 });
   
