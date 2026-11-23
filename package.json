@@ -1,0 +1,8 @@
+{
+  "name": "folklore-explorer",
+  "private": true,
+  "scripts": {
+    "validate": "node tools/validate-data.mjs",
+    "format": "prettier --write ."
+  }
+}

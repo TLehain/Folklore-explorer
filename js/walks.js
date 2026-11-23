@@ -1,15 +1,37 @@
-// Enhanced WalksManager with mobile-optimized UI - FIXED VERSION
-class WalksManager {
+import { escapeHtml, storage, KEYS } from './util.js';
+import { showError, showSuccess } from './notify.js';
+
+// Distance at which the "approaching" cue fires, and at which the manual
+// "I'm here" button appears (in kilometres and metres respectively)
+const APPROACH_RADIUS_KM = 0.3;
+const MANUAL_ARRIVAL_RADIUS_M = 300;
+
+export class WalksManager {
   constructor() {
     this.walks = [];
     this.currentWalk = null;
     this.currentWaypointIndex = 0;
     this.walkStarted = false;
     this.completedWaypoints = new Set();
-    this.currentRoute = null;
-    this.distanceInterval = null;
+    this.uiPanelVisible = true;
+
+    // Routing
+    this.currentRoute = null; // OSRM control (fallback)
     this.fallbackLine = null;
-    this.uiPanelVisible = true; // Default to true for desktop
+    this.walkRouteLayer = null; // curated GeoJSON route
+    this.routeState = 'none'; // 'none' | 'loading' | 'ready' | 'failed'
+
+    // Battery and attention helpers
+    this.alertId = null;
+    this.keepAwake = true;
+    this.wakeLock = null;
+
+    this.resizeHandler = null;
+    this.locationHandler = () => this.refreshWaypointStatus();
+    this.visibilityHandler = () => {
+      if (document.visibilityState === 'visible') this.acquireWakeLock();
+    };
+    this.panelClickHandler = event => this.handlePanelClick(event);
   }
 
   async loadWalks() {
@@ -17,23 +39,21 @@ class WalksManager {
       const response = await fetch('walks.json');
       if (!response.ok) throw new Error('Failed to load walks');
       const data = await response.json();
-      this.walks = data.walks;
+      // Walks marked "published": false are hidden until they are ready
+      this.walks = data.walks.filter(walk => walk.published !== false);
       this.populateWalkSelector();
     } catch (error) {
       console.error('Error loading walks:', error);
-      window.showError('Failed to load guided walks');
+      showError('Failed to load guided walks');
     }
   }
 
   populateWalkSelector() {
     const select = document.getElementById('walkFilter');
-    if (!select) {
-      console.error('walkFilter element not found');
-      return;
-    }
-    
+    if (!select) return;
+
     select.innerHTML = '<option value="">Select a guided walk...</option>';
-    
+
     this.walks.forEach(walk => {
       const option = document.createElement('option');
       option.value = walk.id;
@@ -46,50 +66,58 @@ class WalksManager {
     return this.walks.find(walk => walk.id === walkId);
   }
 
+  getStoryByIdSync(storyId) {
+    if (window.storyManager && window.storyManager.stories) {
+      return window.storyManager.stories.find(s => s.id === storyId);
+    }
+    return null;
+  }
+
+  getCurrentStory() {
+    if (!this.currentWalk) return null;
+    const waypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
+    return waypoint ? this.getStoryByIdSync(waypoint.storyId) : null;
+  }
+
   startWalk(walkId) {
-    console.log('Starting walk:', walkId); // Debug log
-    
-    this.currentWalk = this.getWalkById(walkId);
-    if (!this.currentWalk) {
+    const walk = this.getWalkById(walkId);
+    if (!walk) {
       console.error('Walk not found:', walkId);
-      window.showError('Walk not found');
+      showError('Walk not found');
       return;
     }
 
+    if (this.walkStarted) this.teardownWalk();
+
+    this.currentWalk = walk;
     this.currentWaypointIndex = 0;
     this.walkStarted = true;
     this.completedWaypoints.clear();
-    
-    // Set initial UI visibility based on screen size
     this.uiPanelVisible = window.innerWidth > 768;
-    
+
     this.createWalkUI();
     this.showWalkIntro();
+    this.loadRoute(walk);
+    this.acquireWakeLock();
+    this.saveWalkState();
     this.showCurrentWaypoint();
   }
 
-  createWalkUI() {
-    console.log('Creating walk UI'); // Debug log
-    
-    // Remove any existing walk UI
-    const existingUI = document.getElementById('walk-ui');
-    if (existingUI) {
-      console.log('Removing existing UI');
-      existingUI.remove();
-    }
+  // ---------- Walk panel ----------
 
-    // Create responsive walk UI that adapts to screen size
+  createWalkUI() {
+    const existingUI = document.getElementById('walk-ui');
+    if (existingUI) existingUI.remove();
+
     const walkUI = document.createElement('div');
     walkUI.id = 'walk-ui';
     walkUI.className = this.getWalkUIClass();
-    
-    console.log('Walk UI class:', walkUI.className); // Debug log
-    
+
     walkUI.innerHTML = `
       <div class="walk-header" id="walkHeader">
         <div class="walk-title">
-          <span id="walkTitleText">🚶 ${this.currentWalk.title}</span>
-          <button class="toggle-btn" id="toggleWalkUI">▼</button>
+          <span id="walkTitleText">🚶 ${escapeHtml(this.currentWalk.title)}</span>
+          <button class="toggle-btn" id="toggleWalkUI" data-action="toggle" aria-expanded="true" aria-label="Show or hide walk details">▼</button>
         </div>
         <div class="walk-progress">
           <div class="progress-bar">
@@ -98,161 +126,125 @@ class WalksManager {
           <span id="progressText">0/${this.currentWalk.waypoints.length} waypoints</span>
         </div>
       </div>
-      
+
       <div class="walk-content" id="walkContent">
         <div id="walkIntroContent" class="content-section"></div>
         <div id="waypointContent" class="content-section"></div>
         <div id="routingInstructions" class="content-section"></div>
-        
+
         <div class="walk-actions">
-          <button onclick="walksManager.endWalk()" class="action-btn danger">
-            End Walk
-          </button>
+          <label class="wake-toggle">
+            <input type="checkbox" id="keepAwakeToggle" data-action="keep-awake" ${this.keepAwake ? 'checked' : ''}>
+            Keep screen on during the walk
+          </label>
+          <button data-action="end" class="action-btn danger">End Walk</button>
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(walkUI);
-    console.log('Walk UI appended to body'); // Debug log
-    
-    // Add event listeners
-    this.addWalkUIEventListeners();
-    
-    // Set initial state based on screen size
+
+    // One delegated listener handles every button in the panel
+    walkUI.addEventListener('click', this.panelClickHandler);
+    walkUI.addEventListener('change', this.panelClickHandler);
+
+    if (this.resizeHandler) window.removeEventListener('resize', this.resizeHandler);
+    this.resizeHandler = () => this.updateUIForScreenSize();
+    window.addEventListener('resize', this.resizeHandler);
+
+    window.addEventListener('folklore:locationupdate', this.locationHandler);
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+
     this.updateUIForScreenSize();
-    
-    // Force visibility for desktop
-    if (window.innerWidth > 768) {
-      walkUI.style.display = 'block';
-      walkUI.style.position = 'fixed';
-      walkUI.style.top = '20px';
-      walkUI.style.right = '20px';
-      walkUI.style.zIndex = '1500';
-      console.log('Desktop UI positioned and made visible');
+  }
+
+  handlePanelClick(event) {
+    const target = event.target.closest('[data-action]');
+    if (!target) return;
+    const action = target.dataset.action;
+
+    // The checkbox reports through "change", buttons through "click"
+    if (action === 'keep-awake') {
+      if (event.type === 'change') this.setKeepAwake(target.checked);
+      return;
+    }
+    if (event.type === 'change') return;
+
+    switch (action) {
+      case 'toggle': this.toggleUI(); break;
+      case 'end': this.endWalk(); break;
+      case 'dismiss-intro': this.dismissIntro(); break;
+      case 'view-story': this.viewCurrentStory(); break;
+      case 'next': this.nextWaypoint(); break;
+      case 'manual-arrive': this.manualArrive(); break;
+      default: break;
     }
   }
 
   getWalkUIClass() {
-    const className = window.innerWidth <= 768 ? 'walk-ui-mobile' : 'walk-ui-desktop';
-    console.log('UI Class determined:', className, 'Width:', window.innerWidth); // Debug log
-    return className;
-  }
-
-  addWalkUIEventListeners() {
-    // Toggle button for mobile
-    const toggleBtn = document.getElementById('toggleWalkUI');
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => {
-        console.log('Toggle button clicked');
-        this.toggleUI();
-      });
-    }
-    
-    // Handle window resize
-    const resizeHandler = () => {
-      console.log('Window resized to:', window.innerWidth);
-      this.updateUIForScreenSize();
-    };
-    
-    // Remove existing listener if it exists
-    if (this.resizeHandler) {
-      window.removeEventListener('resize', this.resizeHandler);
-    }
-    
-    this.resizeHandler = resizeHandler;
-    window.addEventListener('resize', this.resizeHandler);
+    return window.innerWidth <= 768 ? 'walk-ui-mobile' : 'walk-ui-desktop';
   }
 
   updateUIForScreenSize() {
     const walkUI = document.getElementById('walk-ui');
     const toggleBtn = document.getElementById('toggleWalkUI');
     const walkContent = document.getElementById('walkContent');
-    
-    if (!walkUI || !toggleBtn || !walkContent) {
-      console.error('UI elements not found for resize update');
-      return;
-    }
-    
-    console.log('Updating UI for screen size:', window.innerWidth); // Debug log
-    
+    if (!walkUI || !toggleBtn || !walkContent) return;
+
     if (window.innerWidth <= 768) {
-      // Mobile layout
       walkUI.className = 'walk-ui-mobile';
       toggleBtn.style.display = 'block';
-      if (!this.uiPanelVisible) {
-        walkContent.style.display = 'none';
-      } else {
-        walkContent.style.display = 'block';
-      }
+      walkContent.style.display = this.uiPanelVisible ? 'block' : 'none';
+      toggleBtn.setAttribute('aria-expanded', String(this.uiPanelVisible));
     } else {
-      // Desktop layout
       walkUI.className = 'walk-ui-desktop';
       toggleBtn.style.display = 'none';
-      // Always show content on desktop
       walkContent.style.display = 'block';
       this.uiPanelVisible = true;
-      
-      // Ensure desktop positioning
-      walkUI.style.position = 'fixed';
-      walkUI.style.top = '20px';
-      walkUI.style.right = '20px';
-      walkUI.style.bottom = 'auto';
-      walkUI.style.left = 'auto';
-      walkUI.style.width = '400px';
-      walkUI.style.zIndex = '1500';
-      
-      console.log('Desktop layout applied');
     }
   }
 
   toggleUI() {
     const content = document.getElementById('walkContent');
     const toggleBtn = document.getElementById('toggleWalkUI');
-    
     if (!content || !toggleBtn) return;
-    
-    if (this.uiPanelVisible) {
-      // Hide content
-      content.style.display = 'none';
-      toggleBtn.textContent = '▲';
-      this.uiPanelVisible = false;
-    } else {
-      // Show content
-      content.style.display = 'block';
-      toggleBtn.textContent = '▼';
-      this.uiPanelVisible = true;
-    }
+
+    this.uiPanelVisible = !this.uiPanelVisible;
+    content.style.display = this.uiPanelVisible ? 'block' : 'none';
+    toggleBtn.textContent = this.uiPanelVisible ? '▼' : '▲';
+    toggleBtn.setAttribute('aria-expanded', String(this.uiPanelVisible));
   }
 
   showWalkIntro() {
     const introContent = document.getElementById('walkIntroContent');
-    if (!introContent) {
-      console.error('walkIntroContent element not found');
-      return;
-    }
-    
+    if (!introContent) return;
+
+    introContent.style.display = 'block';
     introContent.innerHTML = `
       <div class="intro-section">
         <h3>📍 Getting Started</h3>
-        <p>${this.currentWalk.description}</p>
+        <p>${escapeHtml(this.currentWalk.description)}</p>
         <div class="walk-stats">
-          <span class="stat">📏 ${this.currentWalk.distance}km</span>
-          <span class="stat">⏱️ ${this.currentWalk.estimatedTime}</span>
-          <span class="stat">📊 ${this.currentWalk.difficulty}</span>
+          <span class="stat">📏 ${escapeHtml(this.currentWalk.distance)}km</span>
+          <span class="stat">⏱️ ${escapeHtml(this.currentWalk.estimatedTime)}</span>
+          <span class="stat">📊 ${escapeHtml(this.currentWalk.difficulty)}</span>
         </div>
         <div class="start-location">
-          <strong>Starting Point:</strong> ${this.currentWalk.startLocation.name}
+          <strong>Starting Point:</strong> ${escapeHtml(this.currentWalk.startLocation.name)}
         </div>
-        <button onclick="walksManager.dismissIntro()" class="action-btn primary">
+        <p class="safety-note">
+          Stay on public rights of way, take care near roads, cliffs, and livestock,
+          and check weather, tides, and opening times before you set off.
+        </p>
+        <button data-action="dismiss-intro" class="action-btn primary">
           Start Walking! 🚶‍♂️
         </button>
       </div>
     `;
-    
-    // Focus map on starting location
+
     if (window.map) {
       window.map.setView([
-        this.currentWalk.startLocation.latitude, 
+        this.currentWalk.startLocation.latitude,
         this.currentWalk.startLocation.longitude
       ], 14);
     }
@@ -260,138 +252,288 @@ class WalksManager {
 
   dismissIntro() {
     const introContent = document.getElementById('walkIntroContent');
-    if (introContent) {
-      introContent.style.display = 'none';
-    }
+    if (introContent) introContent.style.display = 'none';
   }
+
+  // ---------- Waypoints ----------
 
   showCurrentWaypoint() {
     if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
-      this.completeWalk();
+      this.finishWalk();
       return;
     }
 
     const waypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
     const story = this.getStoryByIdSync(waypoint.storyId);
-    
+
     if (!story) {
       console.error('Story not found:', waypoint.storyId);
       this.currentWaypointIndex++;
+      this.saveWalkState();
       this.showCurrentWaypoint();
       return;
     }
 
-    // Focus map on current waypoint
     if (window.map) {
       window.map.setView([story.latitude, story.longitude], 15);
     }
-    
-    // Update waypoint content
+
+    this.clearDirections();
     this.updateWaypointContent(waypoint, story);
-    
-    // Add waypoint marker
     this.addWaypointMarker(story, waypoint);
-    
-    // Show route
-    this.showRouteToWaypoint(story);
+    this.setApproachAlert(story);
+    this.refreshWaypointStatus();
   }
 
   updateWaypointContent(waypoint, story) {
     const waypointContent = document.getElementById('waypointContent');
-    if (!waypointContent) {
-      console.error('waypointContent element not found');
-      return;
-    }
-    
+    if (!waypointContent) return;
+
+    const isLast = this.currentWaypointIndex >= this.currentWalk.waypoints.length - 1;
+
     waypointContent.innerHTML = `
       <div class="waypoint-section">
-        <h4>📍 Waypoint ${waypoint.order}: ${story.title}</h4>
-        <p class="waypoint-instruction">${waypoint.instruction}</p>
-        
+        <h4>📍 Waypoint ${escapeHtml(waypoint.order)}: ${escapeHtml(story.title)}</h4>
+        <p class="waypoint-instruction">${escapeHtml(waypoint.instruction)}</p>
+
         <div class="waypoint-status">
           <div class="distance-indicator">
-            <span id="distanceToWaypoint">Calculating distance...</span>
+            <span id="distanceToWaypoint" role="status">Calculating distance...</span>
           </div>
-        <div id="waypointActions" class="waypoint-actions" style="display: none;">
-          <button onclick="walksManager.viewCurrentStory()" class="action-btn primary story-btn">
-            📖 View Story
-          </button>
-          <button onclick="walksManager.nextWaypoint()" class="action-btn success">
-            Continue to Next Waypoint →
-          </button>
-        </div>
+          <div id="manualArrival" class="waypoint-actions" style="display: none;">
+            <button data-action="manual-arrive" class="action-btn secondary">I'm here (unlock manually)</button>
+          </div>
+          <div id="waypointActions" class="waypoint-actions" style="display: none;">
+            <button data-action="view-story" class="action-btn primary story-btn">
+              📖 View Story
+            </button>
+            <button data-action="next" class="action-btn success">
+              ${isLast ? 'Finish Walk ✓' : 'Continue to Next Waypoint →'}
+            </button>
+          </div>
         </div>
       </div>
     `;
-    
-    // Update distance continuously
-    this.updateWaypointDistance(story);
+
     this.updateProgress();
   }
 
-  updateWaypointDistance(story) {
-    if (this.distanceInterval) {
-      clearInterval(this.distanceInterval);
+  // Updates the distance text and buttons for the current waypoint.
+  // Once a waypoint is completed it stays completed, so the buttons do not
+  // vanish if GPS drift moves the walker outside the unlock radius.
+  refreshWaypointStatus() {
+    const story = this.getCurrentStory();
+    const lm = window.locationManager;
+    if (!story || !lm) return;
+
+    const distanceElement = document.getElementById('distanceToWaypoint');
+    const actionsDiv = document.getElementById('waypointActions');
+    const manualDiv = document.getElementById('manualArrival');
+    if (!distanceElement || !actionsDiv || !manualDiv) return;
+
+    if (!this.completedWaypoints.has(story.id) && lm.isWithinUnlockRadius(story)) {
+      this.unlockWaypoint(story);
     }
 
-    const updateDistance = () => {
-      if (!window.locationManager) return;
-      
-      const distance = window.locationManager.getDistance(
-        window.locationManager.userLat,
-        window.locationManager.userLng,
-        story.latitude,
-        story.longitude
-      );
-      
-      const distanceElement = document.getElementById('distanceToWaypoint');
-      if (!distanceElement) return;
-      
-      if (distance <= 0.1) {
-        distanceElement.innerHTML = '✅ You\'re here! Story unlocked.';
-        distanceElement.className = 'distance-arrived';
-        this.unlockWaypoint(story);
-        const actionsDiv = document.getElementById('waypointActions');
-        if (actionsDiv) actionsDiv.style.display = 'block';
-      } else {
-        distanceElement.innerHTML = `📏 ${Math.round(distance * 1000)}m away`;
-        distanceElement.className = 'distance-away';
-        const actionsDiv = document.getElementById('waypointActions');
-        if (actionsDiv) actionsDiv.style.display = 'none';
-      }
-    };
-    
-    this.distanceInterval = setInterval(updateDistance, 3000);
-    updateDistance();
+    if (this.completedWaypoints.has(story.id)) {
+      distanceElement.textContent = "✅ You're here! Story unlocked.";
+      distanceElement.className = 'distance-arrived';
+      actionsDiv.style.display = 'block';
+      manualDiv.style.display = 'none';
+      return;
+    }
+
+    actionsDiv.style.display = 'none';
+    distanceElement.className = 'distance-away';
+
+    if (!lm.hasFix) {
+      distanceElement.textContent = '📡 Waiting for your location...';
+      manualDiv.style.display = 'block'; // lets walkers without GPS carry on
+      return;
+    }
+
+    const metres = Math.round(lm.distanceToMetres(story.latitude, story.longitude));
+    distanceElement.textContent = `📏 ${metres}m away`;
+    manualDiv.style.display = metres <= MANUAL_ARRIVAL_RADIUS_M ? 'block' : 'none';
+
+    // Directions from the walker's position, unless a curated route is in use
+    if (this.routeState !== 'loading' && this.routeState !== 'ready' &&
+        !this.currentRoute && !this.fallbackLine) {
+      this.showRouteToWaypoint(story);
+    }
+  }
+
+  // Marks the waypoint as reached. A manual arrival does not save the story as unlocked.
+  unlockWaypoint(story, { manual = false } = {}) {
+    if (this.completedWaypoints.has(story.id)) return;
+
+    this.completedWaypoints.add(story.id);
+    if (!manual && window.storyManager) window.storyManager.rememberUnlock(story.id);
+    this.saveWalkState();
+    this.updateProgress();
+    this.vibrate([300]);
+
+    setTimeout(() => {
+      showSuccess(`✅ Waypoint completed! Enjoy the story of ${story.title}`);
+    }, 1000);
+  }
+
+  manualArrive() {
+    const story = this.getCurrentStory();
+    if (!story) return;
+    this.unlockWaypoint(story, { manual: true });
+    this.refreshWaypointStatus();
   }
 
   updateProgress() {
     const progressFill = document.getElementById('progressFill');
     const progressText = document.getElementById('progressText');
-    
-    if (progressFill && progressText) {
-      const totalWaypoints = this.currentWalk.waypoints.length;
-      const completedCount = this.completedWaypoints.size;
-      const progressPercent = (completedCount / totalWaypoints) * 100;
-      
-      progressFill.style.width = progressPercent + '%';
-      progressText.textContent = `${completedCount}/${totalWaypoints} waypoints`;
+    if (!progressFill || !progressText || !this.currentWalk) return;
+
+    const total = this.currentWalk.waypoints.length;
+    const completed = this.completedWaypoints.size;
+
+    progressFill.style.width = ((completed / total) * 100) + '%';
+    progressText.textContent = `${completed}/${total} waypoints`;
+  }
+
+  nextWaypoint() {
+    if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
+      return;
+    }
+
+    const story = this.getCurrentStory();
+    if (story && !this.completedWaypoints.has(story.id)) {
+      showError('You must reach the waypoint location first!');
+      return;
+    }
+
+    this.currentWaypointIndex++;
+    this.saveWalkState();
+    this.showCurrentWaypoint();
+  }
+
+  // Opens the story in the same dialog used on the map, so the walk stays in place
+  viewCurrentStory() {
+    const story = this.getCurrentStory();
+
+    if (!story) {
+      showError('Story not found');
+      return;
+    }
+
+    if (!this.completedWaypoints.has(story.id)) {
+      showError('You must reach the waypoint location first!');
+      return;
+    }
+
+    window.storyManager.showStoryModal(story);
+  }
+
+  // ---------- Approach cue ----------
+
+  setApproachAlert(story) {
+    this.clearApproachAlert();
+    const lm = window.locationManager;
+    if (!lm) return;
+
+    this.alertId = `approach-${story.id}`;
+    lm.addProximityAlert(story.latitude, story.longitude, APPROACH_RADIUS_KM, () => {
+      this.vibrate([200, 100, 200]);
+      showSuccess(`Approaching ${story.title}`);
+    }, this.alertId);
+  }
+
+  clearApproachAlert() {
+    const lm = window.locationManager;
+    if (lm && this.alertId) lm.removeProximityAlert(this.alertId);
+    this.alertId = null;
+  }
+
+  vibrate(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  }
+
+  // ---------- Screen wake lock ----------
+
+  async acquireWakeLock() {
+    if (!this.keepAwake || this.wakeLock || !this.walkStarted || !('wakeLock' in navigator)) return;
+    try {
+      this.wakeLock = await navigator.wakeLock.request('screen');
+      this.wakeLock.addEventListener('release', () => { this.wakeLock = null; });
+    } catch (error) {
+      console.warn('Wake lock not available:', error);
     }
   }
 
-  showRouteToWaypoint(story) {
-    if (!window.locationManager) return;
-    
-    this.clearRoutes();
-    
-    const userLat = window.locationManager.userLat;
-    const userLng = window.locationManager.userLng;
-    
-    if (!userLat || !userLng || userLat === 0 || userLng === 0) {
-      console.warn('Invalid user location for routing');
+  releaseWakeLock() {
+    if (this.wakeLock) {
+      this.wakeLock.release().catch(() => {});
+      this.wakeLock = null;
+    }
+  }
+
+  setKeepAwake(enabled) {
+    this.keepAwake = enabled;
+    if (enabled) {
+      this.acquireWakeLock();
+    } else {
+      this.releaseWakeLock();
+    }
+  }
+
+  // ---------- Routing ----------
+
+  // A walk can name a curated GeoJSON route ("route": "routes/name.geojson").
+  // Without one, or if it fails to load, directions come from the OSRM service.
+  async loadRoute(walk) {
+    this.clearWalkRoute();
+    if (!walk.route) {
+      this.routeState = 'none';
       return;
     }
-    
+
+    this.routeState = 'loading';
+    try {
+      const response = await fetch(walk.route);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const geojson = await response.json();
+      if (this.currentWalk !== walk) return; // the walk changed while loading
+
+      this.walkRouteLayer = L.geoJSON(geojson, {
+        style: { color: '#2e5939', weight: 4, opacity: 0.85 }
+      }).addTo(window.map);
+      this.routeState = 'ready';
+
+      const routingContent = document.getElementById('routingInstructions');
+      if (routingContent) {
+        routingContent.innerHTML = '<p class="route-note">🧭 Follow the green line on the map.</p>';
+      }
+    } catch (error) {
+      console.warn('Could not load the walk route:', error);
+      if (this.currentWalk === walk) {
+        this.routeState = 'failed';
+        this.refreshWaypointStatus();
+      }
+    }
+  }
+
+  clearWalkRoute() {
+    if (this.walkRouteLayer && window.map) {
+      window.map.removeLayer(this.walkRouteLayer);
+    }
+    this.walkRouteLayer = null;
+  }
+
+  showRouteToWaypoint(story) {
+    const lm = window.locationManager;
+    if (!lm || !lm.hasFix) return;
+
+    this.clearRoutes();
+
+    const userLat = lm.userLat;
+    const userLng = lm.userLng;
+
     try {
       this.currentRoute = L.Routing.control({
         waypoints: [
@@ -400,7 +542,7 @@ class WalksManager {
         ],
         routeWhileDragging: false,
         addWaypoints: false,
-        createMarker: function() { return null; },
+        createMarker: function () { return null; },
         router: L.Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1',
           profile: 'foot',
@@ -409,21 +551,20 @@ class WalksManager {
         lineOptions: {
           styles: [{ color: '#2e5939', weight: 4, opacity: 0.7 }]
         },
-        show: false, // Hide the default routing panel
+        show: false,
         fitSelectedRoutes: true
       });
 
-      this.currentRoute.on('routesfound', (e) => {
+      this.currentRoute.on('routesfound', e => {
         this.showRouteInstructions(e.routes[0]);
       });
 
-      this.currentRoute.on('routingerror', (e) => {
+      this.currentRoute.on('routingerror', e => {
         console.error('Routing error:', e);
         this.showFallbackRoute(userLat, userLng, story);
       });
 
       this.currentRoute.addTo(window.map);
-      
     } catch (error) {
       console.error('Failed to create routing control:', error);
       this.showFallbackRoute(userLat, userLng, story);
@@ -433,11 +574,11 @@ class WalksManager {
   showRouteInstructions(route) {
     const routingContent = document.getElementById('routingInstructions');
     if (!routingContent || !route.instructions) return;
-    
+
     const distance = (route.summary.totalDistance / 1000).toFixed(1);
     const time = Math.round(route.summary.totalTime / 60);
-    
-    let instructionsHTML = `
+
+    let html = `
       <div class="routing-section">
         <h4>🧭 Walking Directions</h4>
         <div class="route-summary">
@@ -446,138 +587,51 @@ class WalksManager {
         </div>
         <div class="route-instructions">
     `;
-    
-    // Show only the first few key instructions to avoid clutter
-    const keyInstructions = route.instructions.slice(0, 5);
-    keyInstructions.forEach((instruction, index) => {
+
+    route.instructions.slice(0, 5).forEach((instruction, index) => {
       const distanceText = instruction.distance > 0 ? ` (${Math.round(instruction.distance)}m)` : '';
-      instructionsHTML += `
+      html += `
         <div class="instruction-step">
           <span class="step-number">${index + 1}</span>
-          <span class="step-text">${instruction.text}${distanceText}</span>
+          <span class="step-text">${escapeHtml(instruction.text)}${distanceText}</span>
         </div>
       `;
     });
-    
+
     if (route.instructions.length > 5) {
-      instructionsHTML += `<div class="more-instructions">... and ${route.instructions.length - 5} more steps</div>`;
+      html += `<div class="more-instructions">... and ${route.instructions.length - 5} more steps</div>`;
     }
-    
-    instructionsHTML += `
+
+    html += `
         </div>
       </div>
     `;
-    
-    routingContent.innerHTML = instructionsHTML;
+
+    routingContent.innerHTML = html;
   }
 
-  unlockWaypoint(story) {
-    if (this.completedWaypoints.has(story.id)) return;
-    
-    this.completedWaypoints.add(story.id);
-    
-    if (this.distanceInterval) {
-      clearInterval(this.distanceInterval);
-      this.distanceInterval = null;
-    }
-    
-    setTimeout(() => {
-      this.showSuccess(`✅ Waypoint completed! Enjoy the story of ${story.title}`);
-    }, 1000);
-  }
-
-  nextWaypoint() {
-    if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
-      return;
-    }
-
-    const currentWaypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
-    const currentStory = this.getStoryByIdSync(currentWaypoint.storyId);
-  
-    if (currentStory && !this.completedWaypoints.has(currentStory.id)) {
-      window.showError('You must reach the waypoint location first!');
-      return;
-    }
-  
-    this.currentWaypointIndex++;
-  
-    if (this.distanceInterval) {
-      clearInterval(this.distanceInterval);
-      this.distanceInterval = null;
-    }
-  
-    this.showCurrentWaypoint();
-  }
-  
-viewCurrentStory() {
-  if (!this.currentWalk || this.currentWaypointIndex >= this.currentWalk.waypoints.length) {
-    return;
-  }
-
-  const currentWaypoint = this.currentWalk.waypoints[this.currentWaypointIndex];
-  const currentStory = this.getStoryByIdSync(currentWaypoint.storyId);
-
-  if (!currentStory) {
-    window.showError('Story not found');
-    return;
-  }
-
-  if (!this.completedWaypoints.has(currentStory.id)) {
-    window.showError('You must reach the waypoint location first!');
-    return;
-  }
-
-  // Store walk state before navigating
-  const walkState = {
-    walkId: this.currentWalk.id,
-    waypointIndex: this.currentWaypointIndex,
-    completedWaypoints: Array.from(this.completedWaypoints),
-    isReturningFromStory: true
-  };
-  localStorage.setItem('walkState', JSON.stringify(walkState));
-
-  // Navigate to story page
-  window.location.href = `story.html?id=${currentStory.id}`;
-}
-
-  completeWalk() {
-    this.walkStarted = false;
+  showFallbackRoute(userLat, userLng, story) {
     this.clearRoutes();
-    
-    // Remove walk UI
-    const walkUI = document.getElementById('walk-ui');
-    if (walkUI) walkUI.remove();
-    
-    if (this.distanceInterval) {
-      clearInterval(this.distanceInterval);
-      this.distanceInterval = null;
-    }
-    
-    // Clean up resize listener
-    if (this.resizeHandler) {
-      window.removeEventListener('resize', this.resizeHandler);
-      this.resizeHandler = null;
-    }
-    // Clean up story modal state
-    this.walkStateBeforeStory = null;
-    if (this.modalKeyHandler) {
-      document.removeEventListener('keydown', this.modalKeyHandler);
-      this.modalKeyHandler = null;
-    }
-    
-    this.showSuccess(`🎉 Congratulations! You've completed the ${this.currentWalk.title} walk!`);
-    
-    this.currentWalk = null;
-    this.currentWaypointIndex = 0;
-    this.completedWaypoints.clear();
+
+    this.fallbackLine = L.polyline([
+      [userLat, userLng],
+      [story.latitude, story.longitude]
+    ], {
+      color: '#d84315',
+      weight: 3,
+      opacity: 0.8,
+      dashArray: '10, 10'
+    }).addTo(window.map);
+
+    window.map.fitBounds(L.latLngBounds([
+      [userLat, userLng],
+      [story.latitude, story.longitude]
+    ]), { padding: [20, 20] });
+
+    showError('Route service unavailable. Showing a direct path.');
   }
 
-  endWalk() {
-    if (confirm('Are you sure you want to end this walk?')) {
-      this.completeWalk();
-    }
-  }
-
+  // Removes the live directions (OSRM control and straight-line fallback)
   clearRoutes() {
     if (this.currentRoute) {
       try {
@@ -587,7 +641,7 @@ viewCurrentStory() {
       }
       this.currentRoute = null;
     }
-    
+
     if (this.fallbackLine) {
       try {
         window.map.removeLayer(this.fallbackLine);
@@ -598,36 +652,28 @@ viewCurrentStory() {
     }
   }
 
-  showFallbackRoute(userLat, userLng, story) {
+  // Clears directions between waypoints, but keeps the curated route text
+  clearDirections() {
     this.clearRoutes();
-    
-    this.fallbackLine = L.polyline([
-      [userLat, userLng],
-      [story.latitude, story.longitude]
-    ], {
-      color: '#ff6b6b',
-      weight: 3,
-      opacity: 0.7,
-      dashArray: '10, 10'
-    }).addTo(window.map);
-    
-    const bounds = L.latLngBounds([
-      [userLat, userLng],
-      [story.latitude, story.longitude]
-    ]);
-    window.map.fitBounds(bounds, { padding: [20, 20] });
-    
-    window.showError('Route service unavailable - showing direct path');
+    if (this.routeState !== 'ready') {
+      const routingContent = document.getElementById('routingInstructions');
+      if (routingContent) routingContent.innerHTML = '';
+    }
   }
 
-  addWaypointMarker(story, waypoint) {
+  clearWaypointMarkers() {
     if (!window.map) return;
-    
     window.map.eachLayer(layer => {
       if (layer.options && layer.options.isWaypointMarker) {
         window.map.removeLayer(layer);
       }
     });
+  }
+
+  addWaypointMarker(story, waypoint) {
+    if (!window.map) return;
+
+    this.clearWaypointMarkers();
 
     const marker = L.marker([story.latitude, story.longitude], {
       isWaypointMarker: true,
@@ -645,99 +691,111 @@ viewCurrentStory() {
           font-weight: bold;
           border: 3px solid white;
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        ">${waypoint.order}</div>`,
+        ">${escapeHtml(waypoint.order)}</div>`,
         iconSize: [40, 40],
         iconAnchor: [20, 20]
       })
     }).addTo(window.map);
-    
+
     marker.bindPopup(`
-      <strong>Waypoint ${waypoint.order}</strong><br>
-      ${story.title}<br>
-      <em>${waypoint.instruction}</em>
+      <strong>Waypoint ${escapeHtml(waypoint.order)}</strong><br>
+      ${escapeHtml(story.title)}<br>
+      <em>${escapeHtml(waypoint.instruction)}</em>
     `);
   }
 
-  getStoryByIdSync(storyId) {
-    if (window.storyManager && window.storyManager.stories) {
-      return window.storyManager.stories.find(s => s.id === storyId);
-    }
-    return null;
-  }
+  // ---------- Finishing and ending ----------
 
-  showSuccess(message) {
-    const successDiv = document.createElement('div');
-    successDiv.className = 'success-notification';
-    successDiv.textContent = message;
-    successDiv.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4CAF50;
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      z-index: 2000;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      max-width: 90%;
-      text-align: center;
-    `;
-    document.body.appendChild(successDiv);
-    setTimeout(() => successDiv.remove(), 5000);
-  }
+  // Shared clean-up for finishing, ending early, or starting another walk
+  teardownWalk() {
+    this.walkStarted = false;
+    this.clearRoutes();
+    this.clearWalkRoute();
+    this.routeState = 'none';
+    this.clearWaypointMarkers();
+    this.clearApproachAlert();
+    this.releaseWakeLock();
 
-  // Debug method to check if walk UI is properly created
-  debugWalkUI() {
-    console.log('=== Walk UI Debug Info ===');
-    console.log('Walk started:', this.walkStarted);
-    console.log('Current walk:', this.currentWalk?.title || 'None');
-    console.log('Screen width:', window.innerWidth);
-    console.log('UI Panel visible:', this.uiPanelVisible);
-    
     const walkUI = document.getElementById('walk-ui');
-    if (walkUI) {
-      console.log('Walk UI element found');
-      console.log('Walk UI class:', walkUI.className);
-      console.log('Walk UI style display:', walkUI.style.display);
-      console.log('Walk UI computed style:', window.getComputedStyle(walkUI).display);
-      console.log('Walk UI position:', walkUI.style.position);
-      console.log('Walk UI z-index:', walkUI.style.zIndex);
-    } else {
-      console.log('Walk UI element NOT found');
+    if (walkUI) walkUI.remove();
+
+    window.removeEventListener('folklore:locationupdate', this.locationHandler);
+    document.removeEventListener('visibilitychange', this.visibilityHandler);
+
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
     }
-    console.log('=== End Debug Info ===');
+
+    this.clearWalkState();
+    this.currentWalk = null;
+    this.currentWaypointIndex = 0;
+    this.completedWaypoints.clear();
+  }
+
+  // Reached the end of the walk
+  finishWalk() {
+    const title = this.currentWalk ? this.currentWalk.title : 'the';
+    this.teardownWalk();
+    showSuccess(`🎉 Congratulations! You've completed the ${title} walk!`);
+  }
+
+  // Ended early, so no celebration
+  abandonWalk() {
+    this.teardownWalk();
+    showSuccess('Walk ended. You can start it again whenever you like.');
+  }
+
+  endWalk() {
+    if (confirm('Are you sure you want to end this walk?')) {
+      this.abandonWalk();
+    }
+  }
+
+  // ---------- Saving progress ----------
+  // Stored so a walker can resume after a refresh or an app restart.
+
+  saveWalkState() {
+    if (!this.currentWalk) return;
+    storage.set(KEYS.walkProgress, {
+      walkId: this.currentWalk.id,
+      waypointIndex: this.currentWaypointIndex,
+      completedWaypoints: Array.from(this.completedWaypoints)
+    });
+  }
+
+  clearWalkState() {
+    storage.remove(KEYS.walkProgress);
+    storage.remove(KEYS.legacyWalkState);
   }
 
   restoreWalkState() {
-  const storedState = localStorage.getItem('walkState');
-  if (!storedState) return false;
+    const state = storage.get(KEYS.walkProgress, null);
+    if (!state || !state.walkId) return false;
 
-  try {
-    const walkState = JSON.parse(storedState);
-    if (!walkState.isReturningFromStory) return false;
-
-    // Clear the stored state
-    localStorage.removeItem('walkState');
-
-    // Restore the walk
-    const walk = this.getWalkById(walkState.walkId);
-    if (walk) {
-      this.currentWalk = walk;
-      this.currentWaypointIndex = walkState.waypointIndex;
-      this.completedWaypoints = new Set(walkState.completedWaypoints);
-      this.walkStarted = true;
-      
-      this.createWalkUI();
-      this.dismissIntro(); // Skip intro on restore
-      this.showCurrentWaypoint();
-      
-      return true;
+    const walk = this.getWalkById(state.walkId);
+    if (!walk || state.waypointIndex >= walk.waypoints.length) {
+      this.clearWalkState();
+      return false;
     }
-  } catch (error) {
-    console.error('Error restoring walk state:', error);
-    localStorage.removeItem('walkState');
+
+    this.currentWalk = walk;
+    this.currentWaypointIndex = state.waypointIndex;
+    this.completedWaypoints = new Set(state.completedWaypoints || []);
+    this.walkStarted = true;
+    this.uiPanelVisible = window.innerWidth > 768;
+
+    if (window.folkloreApp) window.folkloreApp.setMode('guided');
+    const select = document.getElementById('walkFilter');
+    if (select) select.value = walk.id;
+
+    this.createWalkUI();
+    this.showWalkIntro();
+    this.dismissIntro();
+    this.loadRoute(walk);
+    this.acquireWakeLock();
+    this.showCurrentWaypoint();
+    showSuccess(`Resumed your walk: ${walk.title}`);
+    return true;
   }
-  return false;
-}
 }

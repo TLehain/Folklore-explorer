@@ -1,7 +1,5 @@
-/* Import elegant fonts */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
+/* Fonts are loaded from index.html */
 
-/* CSS Custom Properties for consistent theming */
 :root {
   --forest-primary: #2d5a3d;
   --forest-secondary: #4a7c59;
@@ -14,10 +12,11 @@
   --shadow-soft: rgba(45, 90, 61, 0.1);
   --shadow-medium: rgba(45, 90, 61, 0.15);
   --text-primary: #2c3e30;
-  --text-secondary: #5a6b5d;
+  --text-secondary: #4f6052;
 }
 
-/* Base Styles */
+/* ---------- Base ---------- */
+
 * {
   box-sizing: border-box;
 }
@@ -31,7 +30,40 @@ body {
   min-height: 100vh;
 }
 
-/* Header Styles */
+a {
+  color: var(--forest-primary);
+}
+
+:focus-visible {
+  outline: 3px solid var(--forest-primary);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  background: white;
+  color: var(--forest-primary);
+  padding: 10px 14px;
+  border-radius: 8px;
+  z-index: 4000;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+.noscript-note {
+  margin: 20px;
+  padding: 16px;
+  background: #fff3cd;
+  border-radius: 8px;
+}
+
+/* ---------- Header ---------- */
+
 header {
   background: linear-gradient(135deg, var(--forest-primary) 0%, var(--forest-secondary) 100%);
   color: white;
@@ -45,10 +77,7 @@ header {
 header::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="40" cy="70" r="2.5" fill="rgba(255,255,255,0.06)"/><circle cx="90" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
   pointer-events: none;
 }
@@ -65,14 +94,15 @@ header h1 {
 
 .subtitle {
   font-size: 1.1em;
-  opacity: 0.9;
+  opacity: 0.95;
   margin-top: 8px;
   font-style: italic;
   position: relative;
   z-index: 1;
 }
 
-/* Map Styles */
+/* ---------- Map ---------- */
+
 #map {
   height: 450px;
   margin: 20px;
@@ -86,17 +116,15 @@ header h1 {
 #map::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   border: 3px solid var(--forest-primary);
   border-radius: 16px;
   pointer-events: none;
   z-index: 1000;
 }
 
-/* Mode Selector Styles */
+/* ---------- Mode selector ---------- */
+
 #modeSelector {
   display: flex;
   justify-content: center;
@@ -121,21 +149,6 @@ header h1 {
   overflow: hidden;
 }
 
-.mode-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transition: left 0.5s;
-}
-
-.mode-btn:hover::before {
-  left: 100%;
-}
-
 .mode-btn.active {
   background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
   color: white;
@@ -149,7 +162,8 @@ header h1 {
   box-shadow: 0 3px 10px var(--shadow-soft);
 }
 
-/* Search and Filter Styles */
+/* ---------- Search and filters ---------- */
+
 #searchFilters {
   padding: 20px;
   display: flex;
@@ -160,10 +174,10 @@ header h1 {
   flex-wrap: wrap;
 }
 
-#searchBar, 
+#searchBar,
 #categoryFilter {
   padding: 12px 16px;
-  border: 2px solid var(--sage-dark);
+  border: 2px solid var(--forest-secondary);
   border-radius: 25px;
   font-size: 16px;
   background: white;
@@ -172,19 +186,18 @@ header h1 {
   min-width: 200px;
 }
 
-#searchBar:focus, 
+#searchBar:focus,
 #categoryFilter:focus {
-  outline: none;
   border-color: var(--forest-primary);
-  box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.15);
 }
 
 #searchBar::placeholder {
   color: var(--text-secondary);
 }
 
-/* Walk Selector Styles */
+/* ---------- Walk selector ---------- */
+
 #walkSelector {
   padding: 16px 20px;
   text-align: center;
@@ -192,27 +205,49 @@ header h1 {
   border-bottom: 1px solid var(--sage-medium);
 }
 
-#walkSelector select,
 #walkFilter {
   padding: 12px 16px;
-  border: 2px solid var(--sage-dark);
+  border: 2px solid var(--forest-secondary);
   border-radius: 8px;
   font-size: 16px;
   background: white;
   color: var(--text-primary);
   margin-right: 12px;
   min-width: 200px;
-  transition: border-color 0.3s;
 }
 
-#walkSelector select:focus,
-#walkFilter:focus {
-  outline: none;
-  border-color: var(--forest-primary);
-  box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+.secondary-btn {
+  background: white;
+  color: var(--forest-primary);
+  border: 2px solid var(--forest-primary);
+  box-shadow: none;
+  margin-left: 8px;
 }
 
-/* Stories Grid Styles */
+/* ---------- Preview banner ---------- */
+
+.preview-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 20px 0;
+  padding: 12px 16px;
+  background: #fff3cd;
+  color: #5c4400;
+  border: 1px solid #e6c660;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.preview-banner button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+/* ---------- Story cards ---------- */
+
 #stories {
   padding: 30px 20px;
   display: grid;
@@ -265,22 +300,10 @@ header h1 {
   line-height: 1.6;
 }
 
-.story-category {
-  display: inline-block;
-  background: linear-gradient(135deg, var(--sage-medium), var(--sage-dark));
-  color: var(--forest-primary);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
+/* Locked stories use colour rather than transparency, so the text stays readable */
 .story.locked {
-  opacity: 0.7;
   cursor: not-allowed;
-  border: 2px dashed var(--sage-dark);
+  border: 2px dashed var(--forest-secondary);
   background: var(--sage-light);
 }
 
@@ -288,12 +311,18 @@ header h1 {
   background: var(--sage-dark);
 }
 
+.story.locked .distance-info {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .story.unlocked {
   border: 1px solid var(--moss-accent);
   box-shadow: 0 4px 20px rgba(107, 142, 90, 0.2);
 }
 
-/* Button Styles */
+/* ---------- Buttons ---------- */
+
 button {
   background: linear-gradient(135deg, var(--forest-primary), var(--forest-secondary));
   color: white;
@@ -316,68 +345,42 @@ button:active {
   transform: translateY(0);
 }
 
-/* Status Message Styles */
-.loading, 
-.error {
-  text-align: center;
-  padding: 40px 20px;
-  font-size: 18px;
-  border-radius: 12px;
-  margin: 20px;
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
-.loading {
-  background: var(--sage-light);
-  color: var(--text-secondary);
-}
-
-.error {
-  background: #ffe6e6;
-  color: #d32f2f;
-  border: 1px solid #ffcdd2;
-}
-
-.error-notification,
-.success-notification {
-  animation: slideIn 0.3s ease-out;
-}
-
-/* Walk Progress Styles */
-.walk-progress {
-  font-family: 'Inter', sans-serif;
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 16px;
-  box-shadow: 0 4px 16px var(--shadow-soft);
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-weight: 600;
+.link-btn {
+  background: none;
   color: var(--forest-primary);
+  box-shadow: none;
+  padding: 4px 0;
+  font-size: 14px;
+  text-decoration: underline;
 }
 
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background-color: var(--sage-light);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 12px;
-  box-shadow: inset 0 2px 4px var(--shadow-soft);
+.link-btn:hover {
+  transform: none;
+  box-shadow: none;
 }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--moss-accent), var(--forest-primary));
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 8px;
+/* ---------- Footer ---------- */
+
+.site-footer {
+  max-width: 800px;
+  margin: 20px auto 40px;
+  padding: 0 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
 }
 
-/* Walk UI Styles */
+.site-footer p {
+  margin: 8px 0;
+}
+
+/* ---------- Walk panel ---------- */
+
 #walk-ui {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -394,7 +397,6 @@ button:active {
   z-index: 1500;
   box-shadow: 0 8px 32px var(--shadow-medium);
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .walk-ui-mobile {
@@ -407,10 +409,8 @@ button:active {
   border-radius: 12px 12px 0 0;
   z-index: 1500;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-  transition: transform 0.3s ease;
   max-height: 70vh;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .walk-header {
@@ -421,7 +421,6 @@ button:active {
 
 .walk-ui-mobile .walk-header {
   padding: 15px 20px;
-  cursor: pointer;
 }
 
 .walk-title {
@@ -446,18 +445,19 @@ button:active {
   color: white;
   font-size: 16px;
   cursor: pointer;
-  padding: 5px;
+  padding: 5px 10px;
   border-radius: 3px;
-  transition: background-color 0.2s;
+  box-shadow: none;
   display: none;
+}
+
+.toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
 }
 
 .walk-ui-mobile .toggle-btn {
   display: block;
-}
-
-.toggle-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .walk-progress {
@@ -466,15 +466,26 @@ button:active {
   gap: 15px;
 }
 
-#progressText,
-#progressTextMini {
+.progress-bar {
+  flex: 1;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: white;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+#progressText {
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
-}
-
-#progressTextMini {
-  min-width: 40px;
 }
 
 .walk-content {
@@ -493,9 +504,8 @@ button:active {
   border-bottom: 1px solid #eee;
 }
 
-.content-section:last-of-type {
-  border-bottom: none;
-  padding-bottom: 10px;
+.content-section:empty {
+  display: none;
 }
 
 .intro-section h3,
@@ -526,9 +536,18 @@ button:active {
   background: #e8f5e8;
   padding: 15px;
   border-radius: 8px;
-  border-left: 4px solid #4CAF50;
+  border-left: 4px solid #2e7d32;
   margin: 15px 0;
   font-size: 14px;
+}
+
+.safety-note {
+  background: #fff3cd;
+  color: #5c4400;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 15px 0;
 }
 
 .waypoint-instruction {
@@ -553,8 +572,8 @@ button:active {
 
 .distance-away {
   background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
+  color: #5c4400;
+  border: 1px solid #e6c660;
 }
 
 .distance-arrived {
@@ -566,6 +585,11 @@ button:active {
 .waypoint-actions {
   margin-top: 15px;
   text-align: center;
+}
+
+.route-note {
+  margin: 0;
+  font-weight: 500;
 }
 
 .route-summary {
@@ -620,7 +644,7 @@ button:active {
 .more-instructions {
   text-align: center;
   font-style: italic;
-  color: #666;
+  color: var(--text-secondary);
   margin-top: 10px;
   font-size: 14px;
 }
@@ -629,6 +653,12 @@ button:active {
   padding: 20px;
   background: var(--earth-warm);
   text-align: center;
+}
+
+.wake-toggle {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 14px;
 }
 
 .action-btn {
@@ -647,137 +677,199 @@ button:active {
   color: white;
 }
 
-.action-btn.primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-medium);
-}
-
 .action-btn.success {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #2e7d32, #388e3c);
   color: white;
-}
-
-.action-btn.success:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 .action-btn.secondary {
-  background: #6c757d;
+  background: #5c636a;
   color: white;
-}
-
-.action-btn.secondary:hover {
-  background: #545b62;
-  transform: translateY(-2px);
 }
 
 .action-btn.danger {
-  background: linear-gradient(135deg, #dc3545, #c82333);
+  background: linear-gradient(135deg, #c62828, #b71c1c);
   color: white;
 }
 
-.action-btn.danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
-
-.end-walk-btn {
-  background: linear-gradient(135deg, #e57373, #f44336);
-  font-size: 14px;
-  padding: 8px 16px;
-}
-
-.end-walk-btn:hover {
-  background: linear-gradient(135deg, #ef5350, #d32f2f);
-}
-
-.next-waypoint-btn {
-  background: linear-gradient(135deg, var(--moss-accent), #4CAF50);
-  color: white;
-  border: none;
-  padding: 14px 24px;
-  border-radius: 25px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  min-height: 48px;
-  width: 100%;
-  margin-top: 16px;
-}
-
-.next-waypoint-btn:hover {
-  background: linear-gradient(135deg, #689f49, #45a049);
-}
-
-.next-waypoint-btn:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-}
-
-.dismiss-btn {
-  background: linear-gradient(135deg, var(--moss-accent), #4CAF50);
-  margin-top: 15px;
-}
-
-.dismiss-btn:hover {
-  background: linear-gradient(135deg, #689f49, #45a049);
-}
-
-/* Waypoint and Walk Specific Styles */
 .waypoint-marker {
-  background: var(--forest-primary);
-  border: 3px solid white;
-  border-radius: 50%;
+  background: transparent;
+  border: none;
+}
+
+/* ---------- Dialogs (story reader and welcome) ---------- */
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  max-width: 800px;
+  max-height: 90vh;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background: #2e5939;
+  color: white;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border-radius: 50%;
+  box-shadow: none;
+  transition: background-color 0.2s;
 }
 
-.waypoint-number {
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
+.close-btn:hover,
+.close-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+  outline: 2px solid white;
+  box-shadow: none;
 }
 
-.walk-intro-content {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 500px;
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.story-image-container {
+  margin: 15px 0;
   text-align: center;
 }
 
-.walk-intro-content h3 {
-  color: var(--forest-primary);
-  margin-bottom: 15px;
-}
-
-.walk-details {
-  display: flex;
-  justify-content: space-around;
-  margin: 15px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-/* Leaflet Routing Styles */
-.leaflet-routing-container-mobile {
-  background: rgba(255, 255, 255, 0.95);
+.story-image {
+  max-width: 100%;
+  height: auto;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  max-height: 200px;
-  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+  max-height: 400px;
 }
 
-.leaflet-routing-container-mobile .leaflet-routing-alt {
-  padding: 10px;
+.image-error {
+  background: #f0f0f0;
+  padding: 40px;
+  border-radius: 8px;
+  color: #555;
+  font-style: italic;
+}
+
+.story-content {
+  line-height: 1.6;
+  margin: 15px 0;
+}
+
+.story-content p {
+  margin: 0 0 1em;
+}
+
+.audio-container {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.audio-container audio {
+  width: 100%;
+  height: 40px;
+  margin: 0;
+}
+
+.speed-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
   font-size: 14px;
 }
 
-/* Custom Scrollbar Styles */
+.speed-control select {
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.credits {
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.plain-list {
+  padding-left: 20px;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  text-align: center;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.continue-btn {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  min-height: 44px;
+}
+
+.continue-btn:hover,
+.continue-btn:focus-visible {
+  background: #276b2b;
+  outline: 2px solid #2e5939;
+  outline-offset: 2px;
+}
+
+/* ---------- Notifications ---------- */
+
+.error-notification,
+.success-notification {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ---------- Scrollbar ---------- */
+
 .walk-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -787,107 +879,88 @@ button:active {
 }
 
 .walk-content::-webkit-scrollbar-thumb {
-  background: var(--sage-dark);
+  background: var(--forest-secondary);
   border-radius: 3px;
 }
 
-.walk-content::-webkit-scrollbar-thumb:hover {
-  background: var(--forest-secondary);
-}
+/* ---------- Animations ---------- */
 
-/* Animation Keyframes */
 @keyframes slideIn {
   from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
   to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
-@keyframes slideUp {
-  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
-}
-
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes slideInUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
-/* Desktop Specific Styles */
 @media (min-width: 769px) {
   .walk-ui-desktop {
     animation: slideInRight 0.3s ease-out;
   }
 }
 
-/* Tablet Responsive Styles */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Tablet and phone ---------- */
+
 @media screen and (max-width: 768px) {
-  /* Header adjustments */
   header h1 {
     font-size: 2em;
   }
-  
-  /* Map adjustments */
+
   #map {
     height: 300px;
     margin: 12px;
     border-radius: 12px;
   }
-  
-  /* Search filters stack vertically */
+
   #searchFilters {
     flex-direction: column;
     gap: 12px;
     padding: 16px;
   }
-  
-  #searchFilters input, 
+
+  #searchFilters input,
   #searchFilters select {
     width: 100%;
-    box-sizing: border-box;
     padding: 12px;
     font-size: 16px;
     min-width: unset;
   }
-  
-  /* Stories grid to single column */
+
   #stories {
     grid-template-columns: 1fr;
     padding: 20px 12px;
     gap: 16px;
   }
-  
+
   .story {
     max-width: 100%;
     margin: 0;
     padding: 20px;
   }
-  
-  /* Mode selector improvements */
+
   #modeSelector {
     padding: 16px 12px;
     gap: 8px;
@@ -899,12 +972,10 @@ button:active {
     font-size: 14px;
   }
 
-  /* Walk selector improvements */
   #walkSelector {
     padding: 12px;
   }
 
-  #walkSelector select,
   #walkFilter {
     width: 100%;
     padding: 10px;
@@ -914,83 +985,97 @@ button:active {
     min-width: unset;
   }
 
-  /* Mobile walk UI */
   .walk-ui-mobile {
     animation: slideInUp 0.3s ease-out;
   }
-  
+
   .walk-actions {
     padding: 15px;
   }
-  
+
   .action-btn {
     width: 100%;
     margin-bottom: 10px;
   }
-  
+
   .action-btn:last-child {
     margin-bottom: 0;
   }
-  
+
   .content-section {
     padding: 15px;
   }
-  
+
   .walk-stats {
     justify-content: center;
   }
-  
+
   .stat {
     font-size: 12px;
     padding: 6px 10px;
   }
-  
+
   .instruction-step {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .step-number {
     margin-bottom: 5px;
   }
-  
-  .next-waypoint-btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 18px;
-  }
 
-  /* Adjust map height when walk UI is present */
+  /* Leaves room for the walk panel */
   body:has(.walk-ui-mobile) #map {
-    height: calc(100vh - 220px) !important;
+    height: calc(100vh - 220px);
     margin-bottom: 20px;
   }
 
-  /* Leaflet routing mobile adjustments */
-  .leaflet-routing-container-mobile {
-    font-size: 12px;
-    max-width: 90%;
+  .modal-content {
+    margin: 10px;
+    max-height: 95vh;
+    max-width: calc(100vw - 20px);
+  }
+
+  .modal-header,
+  .modal-body {
+    padding: 15px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.3em;
+    line-height: 1.2;
+  }
+
+  .story-image {
+    max-height: 250px;
+    width: 100%;
+  }
+
+  .story-content {
+    font-size: 16px;
+  }
+
+  .audio-container {
+    margin: 15px 0;
+    padding: 10px;
   }
 }
 
-/* Mobile Phone Specific Styles */
 @media screen and (max-width: 480px) {
-  /* Very small map for phones */
   #map {
     height: 250px;
     margin: 8px;
   }
-  
-  /* Reduce header padding */
+
   header {
     padding: 20px 16px;
   }
-  
+
   header h1 {
     font-size: 1.8em;
   }
-  
+
   .story {
     padding: 16px;
   }
-  }
+}

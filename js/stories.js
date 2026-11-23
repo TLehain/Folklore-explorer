@@ -1,455 +1,373 @@
-class StoryManager {
+import { escapeHtml, toParagraphs, storage, KEYS } from './util.js';
+import { showError } from './notify.js';
+import { openDialog } from './dialog.js';
+
+export class StoryManager {
   constructor() {
-    this.stories = [];
-    this.markers = [];
+    this.stories = []; // published stories, in the order of stories.json
+    this.sorted = []; // the same stories, nearest first
     this.filteredStories = [];
+    this.markers = new Map(); // story id -> Leaflet marker
+    this.searchTerm = '';
+    this.category = '';
+    this.listEventsBound = false;
+    this.dialog = null;
+
+    // Preview mode lets people read every story without being nearby
+    this.previewMode = false;
+
+    // Stories reached once stay unlocked, even after the walker leaves the area
+    this.unlockedIds = new Set(storage.get(KEYS.unlockedStories, []));
   }
 
   async loadStories() {
     try {
       const response = await fetch('stories.json');
       if (!response.ok) throw new Error('Failed to load stories');
-      this.stories = await response.json();
+      const allStories = await response.json();
+      // Entries marked "draft": true (for example placeholder text) stay hidden
+      this.stories = allStories.filter(story => !story.draft);
+      this.sorted = [...this.stories];
       window.storiesData = this.stories;
-      this.filteredStories = [...this.stories];
+      this.bindListEvents();
+      this.applyFilters();
       this.displayStories();
       this.addMarkersToMap();
     } catch (error) {
       console.error('Error loading stories:', error);
-      window.showError('Failed to load stories');
+      showError('Failed to load stories');
     }
   }
-  
-calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
 
-sortStoriesByProximity(userLat, userLon) {
-  // Calculate distances for all stories
-  this.stories.forEach(story => {
-    story.distance = this.calculateDistance(userLat, userLon, story.latitude, story.longitude);
-  });
-  
-  // Sort the main stories array by distance
-  this.stories.sort((a, b) => a.distance - b.distance);
-  
-  // Update filtered stories to maintain the same order
-  // Re-apply current filters while preserving the new proximity order
-  const searchBar = document.getElementById('searchBar');
-  const categoryFilter = document.getElementById('categoryFilter');
-  
-  if (searchBar && categoryFilter) {
-    this.filterStories(searchBar.value, categoryFilter.value);
-  } else {
-    // If no filters are active, just copy the sorted array
-    this.filteredStories = [...this.stories];
+  // ---------- Unlocking ----------
+
+  setPreviewMode(enabled) {
+    this.previewMode = enabled;
+    this.syncView();
+  }
+
+  rememberUnlock(storyId) {
+    if (this.unlockedIds.has(storyId)) return;
+    this.unlockedIds.add(storyId);
+    storage.set(KEYS.unlockedStories, Array.from(this.unlockedIds));
+  }
+
+  clearUnlocks() {
+    this.unlockedIds.clear();
+    storage.remove(KEYS.unlockedStories);
+  }
+
+  // Returns true when the story can be read. Reaching a story saves the unlock.
+  isStoryUnlocked(story) {
+    if (this.previewMode || this.unlockedIds.has(story.id)) return true;
+    const lm = window.locationManager;
+    if (!lm) return true;
+    if (lm.isWithinUnlockRadius(story)) {
+      this.rememberUnlock(story.id);
+      return true;
+    }
+    return false;
+  }
+
+  getDistanceMetres(story) {
+    const lm = window.locationManager;
+    if (!lm || !lm.hasFix) return null;
+    return Math.round(lm.distanceToMetres(story.latitude, story.longitude));
+  }
+
+  getUnlockRadius(story) {
+    const lm = window.locationManager;
+    return story.unlockRadius || (lm ? lm.defaultUnlockRadiusM : 100);
+  }
+
+  distanceLabel(story) {
+    const metres = this.getDistanceMetres(story);
+    return metres === null ? 'Location needed to unlock' : `Distance: ${metres}m`;
+  }
+
+  // ---------- Sorting and updating ----------
+
+  // Called on the first fix and after each throttled position update.
+  // Re-sorts, then updates the page in place where possible so open popups
+  // and touch feedback are not interrupted.
+  refreshProximity(userLat, userLon) {
+    const lm = window.locationManager;
+    if (!lm) return;
+
+    this.stories.forEach(story => {
+      story.distance = lm.getDistance(userLat, userLon, story.latitude, story.longitude);
+    });
+    this.sorted = [...this.stories].sort((a, b) => a.distance - b.distance);
+    this.applyFilters();
+    this.syncView();
+  }
+
+  // Rebuilds only what changed
+  syncView() {
+    const container = document.getElementById('stories');
+    if (!container || !window.map) return;
+
+    const renderedOrder = Array.from(container.children).map(card => card.dataset.storyId).join('|');
+    const wantedOrder = this.filteredStories.map(story => story.id).join('|');
+
+    if (renderedOrder !== wantedOrder) {
+      this.displayStories();
+    } else {
+      Array.from(container.children).forEach((card, index) => {
+        this.renderCard(card, this.filteredStories[index]);
+      });
+    }
+
+    const sameMarkers = this.markers.size === this.filteredStories.length &&
+      this.filteredStories.every(story => this.markers.has(story.id));
+
+    if (sameMarkers) {
+      this.filteredStories.forEach(story => {
+        this.markers.get(story.id).setPopupContent(this.popupHtml(story));
+      });
+    } else {
+      this.addMarkersToMap();
+    }
+  }
+
+  applyFilters() {
+    const term = (this.searchTerm || '').toLowerCase();
+    // this.sorted is already in proximity order, so filtering keeps that order
+    this.filteredStories = this.sorted.filter(story => {
+      const matchesSearch = !term ||
+        story.title.toLowerCase().includes(term) ||
+        story.teaser.toLowerCase().includes(term);
+      const matchesCategory = !this.category || story.category === this.category;
+      return matchesSearch && matchesCategory;
+    });
+  }
+
+  // Called when the person changes the search box or category
+  filterStories(searchTerm, category) {
+    this.searchTerm = searchTerm || '';
+    this.category = category || '';
+    this.applyFilters();
     this.displayStories();
     this.addMarkersToMap();
   }
-}
-  
+
+  // ---------- Opening a story ----------
+
   openStory(storyId) {
     const story = this.stories.find(s => s.id === storyId);
     if (!story) return;
-      
-    // Check if user is within 100m of the story location
-    if (window.locationManager) {
-      const distance = window.locationManager.getDistance(
-        window.locationManager.userLat,
-        window.locationManager.userLng,
-        story.latitude,
-        story.longitude
-      );
-      
-      if (distance > 0.1) { // 0.1km = 100m
-        window.showError(`You must be within 100m of ${story.title} to unlock it. You are ${Math.round(distance * 1000)}m away.`);
-        return;
+
+    if (!this.isStoryUnlocked(story)) {
+      const metres = this.getDistanceMetres(story);
+      if (metres === null) {
+        showError('Your location is needed to unlock stories. Choose "Use my location", or switch on preview mode to read from home.');
+      } else {
+        showError(`You must be within ${this.getUnlockRadius(story)}m of ${story.title} to unlock it. You are ${metres}m away.`);
       }
+      return;
     }
-    
-    // Open story in modal instead of navigating
+
     this.showStoryModal(story);
   }
 
-  // ENHANCED VERSION - Replace the existing showStoryModal method with this
   showStoryModal(story) {
-    // Remove existing modal if any
-    const existingModal = document.getElementById('story-modal');
-    if (existingModal) existingModal.remove();
+    if (this.dialog) this.dialog.close();
 
-    // Create modal with improved image handling
-    const modal = document.createElement('div');
-    modal.id = 'story-modal';
-    modal.className = 'story-modal';
-    modal.innerHTML = `
-      <div class="modal-backdrop" onclick="storyManager.closeStoryModal()"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>${story.title}</h2>
-          <button class="close-btn" onclick="storyManager.closeStoryModal()" aria-label="Close story">×</button>
-        </div>
-        <div class="modal-body">
-          <p><strong>Category:</strong> ${story.category}</p>
-          <div class="story-image-container">
-            <picture>
-              <source srcset="${story.image.replace('.jpg', '.webp')}" type="image/webp">
-              <img 
-                src="${story.image}" 
-                alt="${story.title} - ${story.category} folklore story" 
-                class="story-image"
-                loading="lazy"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-              />
-            </picture>
-            <div class="image-error" style="display: none;">
-              <p>📸 Image unavailable</p>
-            </div>
-          </div>
-          <div class="story-content">
-            ${story.content}
-          </div>
-          <div class="audio-container">
-            <audio controls preload="none" aria-label="Audio narration of ${story.title}">
-              <source src="${story.audio}" type="audio/mp3">
-              <p>Your browser does not support the audio element. <a href="${story.audio}">Download the audio file</a>.</p>
-            </audio>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button onclick="storyManager.closeStoryModal()" class="continue-btn">Close Story</button>
+    const paragraphs = toParagraphs(story.content)
+      .map(paragraph => `<p>${escapeHtml(paragraph)}</p>`)
+      .join('');
+    const credits = story.credits
+      ? `<p class="credits">${escapeHtml(story.credits)}</p>`
+      : '';
+
+    const bodyHtml = `
+      <p><strong>Category:</strong> ${escapeHtml(story.category)}</p>
+      <div class="story-image-container">
+        <img
+          src="${escapeHtml(story.image)}"
+          alt="${escapeHtml(story.title)} - ${escapeHtml(story.category)} folklore story"
+          class="story-image"
+          loading="lazy"
+        />
+        <div class="image-error" hidden>
+          <p>📸 Image unavailable</p>
         </div>
       </div>
+      <div class="story-content">${paragraphs}</div>
+      <div class="audio-container">
+        <audio controls preload="none" aria-label="Audio narration of ${escapeHtml(story.title)}">
+          <source src="${escapeHtml(story.audio)}" type="audio/mpeg">
+          <p>Your browser does not support the audio element. <a href="${escapeHtml(story.audio)}">Download the audio file</a>.</p>
+        </audio>
+        <label class="speed-control">
+          Speed
+          <select data-role="speed" aria-label="Playback speed">
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+          </select>
+        </label>
+      </div>
+      ${credits}
     `;
 
-    // Enhanced modal styles
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
-    `;
+    this.dialog = openDialog({
+      id: 'story-modal',
+      title: story.title,
+      bodyHtml,
+      footerHtml: '<button class="continue-btn" data-action="dismiss">Close Story</button>',
+      onClose: () => { this.dialog = null; }
+    });
 
-    document.body.appendChild(modal);
-    this.addEnhancedModalStyles();
-    document.body.style.overflow = 'hidden';
+    const root = this.dialog.root;
+    const image = root.querySelector('.story-image');
+    const imageError = root.querySelector('.image-error');
+    const audio = root.querySelector('audio');
+    const speed = root.querySelector('[data-role="speed"]');
+
+    image.addEventListener('error', () => {
+      image.hidden = true;
+      imageError.hidden = false;
+    });
+
+    speed.addEventListener('change', () => {
+      audio.playbackRate = parseFloat(speed.value);
+    });
+
+    audio.addEventListener('play', () => this.setMediaSession(story, audio));
   }
 
   closeStoryModal() {
-    const modal = document.getElementById('story-modal');
-    if (modal) {
-      modal.remove();
-      document.body.style.overflow = 'auto';
+    if (this.dialog) this.dialog.close();
+  }
+
+  // Shows the title and lock-screen controls while audio plays
+  setMediaSession(story, audio) {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: story.title,
+        artist: 'Folklore Explorer',
+        album: story.category,
+        artwork: [{ src: new URL(story.image, window.location.href).href }]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => audio.play());
+      navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        audio.currentTime = Math.max(0, audio.currentTime - 15);
+      });
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 15);
+      });
+    } catch (error) {
+      console.warn('Media session not available:', error);
     }
   }
 
-  // ENHANCED VERSION - Replace the existing addModalStyles method with this
-  addEnhancedModalStyles() {
-    if (document.getElementById('enhanced-modal-styles')) return;
+  // ---------- Story list and map ----------
 
-    const style = document.createElement('style');
-    style.id = 'enhanced-modal-styles';
-    style.textContent = `
-      .modal-backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-      }
-
-      .modal-content {
-        position: relative;
-        background: white;
-        border-radius: 12px;
-        max-width: 800px;
-        max-height: 90vh;
-        width: 100%;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
-      }
-
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        border-bottom: 1px solid #eee;
-        background: #2e5939;
-        color: white;
-      }
-
-      .modal-header h2 {
-        margin: 0;
-        font-size: 1.5em;
-      }
-
-      .close-btn {
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: white;
-        cursor: pointer;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background-color 0.2s;
-      }
-
-      .close-btn:hover, .close-btn:focus {
-        background: rgba(255, 255, 255, 0.1);
-        outline: 2px solid white;
-      }
-
-      .modal-body {
-        padding: 20px;
-        overflow-y: auto;
-        flex: 1;
-      }
-
-      /* Enhanced image container */
-      .story-image-container {
-        margin: 15px 0;
-        text-align: center;
-      }
-
-      .story-image {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        /* Maintain aspect ratio */
-        object-fit: cover;
-        /* Set max dimensions for consistency */
-        max-height: 400px;
-      }
-
-      .image-error {
-        background: #f0f0f0;
-        padding: 40px;
-        border-radius: 8px;
-        color: #666;
-        font-style: italic;
-      }
-
-      .story-content {
-        line-height: 1.6;
-        margin: 15px 0;
-        text-align: justify;
-      }
-
-      /* Enhanced audio container */
-      .audio-container {
-        margin: 20px 0;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-      }
-
-      .audio-container audio {
-        width: 100%;
-        height: 40px;
-        margin: 0;
-      }
-
-      .modal-footer {
-        padding: 15px 20px;
-        border-top: 1px solid #eee;
-        text-align: center;
-      }
-
-      .continue-btn {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background-color 0.2s;
-        min-height: 44px; /* Touch target size */
-      }
-
-      .continue-btn:hover, .continue-btn:focus {
-        background-color: #45a049;
-        outline: 2px solid #2e5939;
-      }
-
-      /* Mobile responsive enhancements */
-      @media screen and (max-width: 768px) {
-        .modal-content {
-          margin: 10px;
-          max-height: 95vh;
-          max-width: calc(100vw - 20px);
-        }
-        
-        .modal-header {
-          padding: 15px;
-        }
-        
-        .modal-body {
-          padding: 15px;
-        }
-        
-        .modal-header h2 {
-          font-size: 1.3em;
-          line-height: 1.2;
-        }
-
-        .story-image {
-          max-height: 250px;
-          width: 100%;
-          object-fit: cover;
-        }
-
-        .story-content {
-          font-size: 16px; /* Prevent zoom on iOS */
-          text-align: left; /* Better for mobile reading */
-        }
-
-        .audio-container {
-          margin: 15px 0;
-          padding: 10px;
-        }
-      }
-
-      /* High DPI display optimization */
-      @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-        .story-image {
-          image-rendering: -webkit-optimize-contrast;
-          image-rendering: crisp-edges;
-        }
-      }
-
-      /* Accessibility improvements */
-      @media (prefers-reduced-motion: reduce) {
-        .continue-btn, .close-btn {
-          transition: none;
-        }
-      }
-
-      /* Focus management for keyboard navigation */
-      .modal-content:focus-within .close-btn:focus {
-        outline: 2px solid #4CAF50;
-        outline-offset: 2px;
-      }
-    `;
-    
-    document.head.appendChild(style);
-  }
-
-  displayStories() {
+  // One set of listeners on each container replaces per-item handlers
+  bindListEvents() {
+    if (this.listEventsBound) return;
     const container = document.getElementById('stories');
-    container.innerHTML = '';
-    
-    this.filteredStories.forEach(story => {
-      const isUnlocked = this.isStoryUnlocked(story);
-      const storyDiv = document.createElement('div');
-      storyDiv.className = `story ${isUnlocked ? '' : 'locked'}`;
-      storyDiv.innerHTML = `
-        <h3>${story.title} ${isUnlocked ? '' : '🔒'}</h3>
-        <p><strong>Category:</strong> ${story.category}</p>
-        <p>${story.teaser.substring(0, 100)}</p>
-        ${!isUnlocked ? `<p class="distance-info">Distance: ${this.getDistanceToStory(story)}m</p>` : ''}
-      `;
-      
-      // Better touch handling for mobile
-      storyDiv.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.openStory(story.id);
-      });
+    if (!container) return;
+    this.listEventsBound = true;
 
-      // Add touch feedback
-      storyDiv.addEventListener('touchstart', () => {
-        storyDiv.style.transform = 'scale(0.98)';
-      });
+    container.addEventListener('click', event => {
+      const card = event.target.closest('[data-story-id]');
+      if (card) {
+        event.preventDefault();
+        this.openStory(card.dataset.storyId);
+      }
+    });
 
-      storyDiv.addEventListener('touchend', () => {
-        storyDiv.style.transform = 'scale(1)';
-      });
-      
-      container.appendChild(storyDiv);
+    container.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const card = event.target.closest('[data-story-id]');
+      if (card) {
+        event.preventDefault();
+        this.openStory(card.dataset.storyId);
+      }
+    });
+
+    const press = event => {
+      const card = event.target.closest('.story');
+      if (card) card.style.transform = 'scale(0.98)';
+    };
+    const release = event => {
+      const card = event.target.closest('.story');
+      if (card) card.style.transform = 'scale(1)';
+    };
+    container.addEventListener('touchstart', press, { passive: true });
+    container.addEventListener('touchend', release);
+    container.addEventListener('touchcancel', release);
+
+    // Popup buttons are created and replaced by Leaflet, so listen on the map
+    window.map.getContainer().addEventListener('click', event => {
+      const button = event.target.closest('[data-open-story]');
+      if (button) this.openStory(button.dataset.openStory);
     });
   }
 
-  isStoryUnlocked(story) {
-    if (!window.locationManager) return true; // Fallback if no location
-    const distance = window.locationManager.getDistance(
-      window.locationManager.userLat,
-      window.locationManager.userLng,
-      story.latitude,
-      story.longitude
-    );
-    return distance <= 0.1; // 100m
+  // Full rebuild of the list (used when the order or the filters change)
+  displayStories() {
+    const container = document.getElementById('stories');
+    if (!container) return;
+    container.innerHTML = '';
+
+    this.filteredStories.forEach(story => {
+      const card = document.createElement('div');
+      card.dataset.storyId = story.id;
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      this.renderCard(card, story);
+      container.appendChild(card);
+    });
   }
 
-  getDistanceToStory(story) {
-    if (!window.locationManager) return '?';
-    const distance = window.locationManager.getDistance(
-      window.locationManager.userLat,
-      window.locationManager.userLng,
-      story.latitude,
-      story.longitude
-    );
-    return Math.round(distance * 1000);
+  // Updates one card, and skips the work when nothing visible has changed
+  renderCard(card, story) {
+    const unlocked = this.isStoryUnlocked(story);
+    const label = this.distanceLabel(story);
+    const signature = `${unlocked}|${label}`;
+    if (card.dataset.signature === signature) return;
+
+    card.dataset.signature = signature;
+    card.className = `story ${unlocked ? 'unlocked' : 'locked'}`;
+    card.setAttribute('aria-label', `${story.title}. ${unlocked ? 'Unlocked.' : 'Locked.'}`);
+    card.innerHTML = `
+      <h3>${escapeHtml(story.title)} ${unlocked ? '' : '🔒'}</h3>
+      <p><strong>Category:</strong> ${escapeHtml(story.category)}</p>
+      <p>${escapeHtml(story.teaser.substring(0, 100))}</p>
+      ${unlocked ? '' : `<p class="distance-info">${escapeHtml(label)}</p>`}
+    `;
+  }
+
+  popupHtml(story) {
+    const unlocked = this.isStoryUnlocked(story);
+    return `
+      <strong>${escapeHtml(story.title)} ${unlocked ? '' : '🔒'}</strong><br>
+      <em>${escapeHtml(story.category)}</em><br>
+      ${unlocked ?
+        `<button data-open-story="${escapeHtml(story.id)}" style="padding: 10px 15px; font-size: 14px; min-height: 44px;">Read Story</button>` :
+        `<p>🔒 Come within ${this.getUnlockRadius(story)}m to unlock<br>${escapeHtml(this.distanceLabel(story))}</p>`
+      }
+    `;
   }
 
   addMarkersToMap() {
+    if (!window.map) return;
     this.markers.forEach(marker => window.map.removeLayer(marker));
-    this.markers = [];
+    this.markers.clear();
 
     this.filteredStories.forEach(story => {
-      const isUnlocked = this.isStoryUnlocked(story);
       const marker = L.marker([story.latitude, story.longitude])
         .addTo(window.map)
-        .bindPopup(`
-          <strong>${story.title} ${isUnlocked ? '' : '🔒'}</strong><br>
-          <em>${story.category}</em><br>
-          ${isUnlocked ? 
-            `<button onclick="storyManager.openStory('${story.id}')" style="padding: 10px 15px; font-size: 14px; min-height: 44px;">Read Story</button>` :
-            `<p>🔒 Come within 100m to unlock<br>Distance: ${this.getDistanceToStory(story)}m</p>`
-          }
-        `);
-      this.markers.push(marker);
+        .bindPopup(this.popupHtml(story));
+      this.markers.set(story.id, marker);
     });
-  }
-
-  // Improved filterStories method that preserves proximity order
-  filterStories(searchTerm, category) {
-    this.filteredStories = this.stories.filter(story => {
-      const matchesSearch = !searchTerm || 
-        story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        story.teaser.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = !category || story.category === category;
-      
-      return matchesSearch && matchesCategory;
-    });
-    
-    // The filtered stories will maintain the proximity order from the original sorted array
-    this.displayStories();
-    this.addMarkersToMap();
   }
 }

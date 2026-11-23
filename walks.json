@@ -2,9 +2,10 @@
   "walks": [
     {
       "id": "northumberland-legends",
+      "published": false,
+      "unpublishedReason": "The two stops are about 84 km apart (Bamburgh to the Lambton Worm site), so this cannot be walked in 2 hours. Split into a Bamburgh walk and a Penshaw/Lambton walk, each with at least two stops, then set published to true.",
       "title": "Northumberland Legends Walk",
       "description": "Explore the supernatural tales of Northumberland's ancient castles and mysterious landscapes",
-      "duration": 120,
       "difficulty": "moderate",
       "distance": 3.2,
       "startLocation": {
@@ -16,24 +17,27 @@
         {
           "order": 1,
           "storyId": "pink-lady-bamburgh",
-          "instruction": "Start at Bamburgh Castle. Look for the grey stones of the ancient fortress.",
-          "waitTime": 300
+          "instruction": "Start at Bamburgh Castle. Look for the grey stones of the ancient fortress."
         },
         {
           "order": 2,
           "storyId": "lambton-worm",
-          "instruction": "Travel south to Penshaw Monument. Follow the winding path to the hilltop.",
-          "waitTime": 300
+          "instruction": "Travel south to Penshaw Monument. Follow the winding path to the hilltop."
         }
       ],
-      "tags": ["supernatural", "historical", "castle"],
+      "tags": [
+        "supernatural",
+        "historical",
+        "castle"
+      ],
       "estimatedTime": "2 hours"
-      },
+    },
     {
       "id": "fae-creatures-tour",
+      "published": false,
+      "unpublishedReason": "The Bog Faeries stop is placeholder text and sits roughly 300 km from Bearpark, and the Monks of Bearpark story is placeholder text. Write both stories, choose north east locations within walking distance, then set published to true.",
       "title": "Mystical Creatures of the Countryside",
       "description": "Journey through ancient woodlands and boglands to discover tales of magical beings",
-      "duration": 180,
       "difficulty": "easy",
       "distance": 2.1,
       "startLocation": {
@@ -45,59 +49,62 @@
         {
           "order": 1,
           "storyId": "monks-of-bearpark",
-          "instruction": "Begin at the ancient oak tree. Listen for whispers in the wind.",
-          "waitTime": 240
+          "instruction": "Begin at the ancient oak tree. Listen for whispers in the wind."
         },
         {
           "order": 2,
           "storyId": "bog-faeries",
-          "instruction": "Follow the wooden boardwalk across the marshland. Watch for dancing lights.",
-          "waitTime": 360
+          "instruction": "Follow the wooden boardwalk across the marshland. Watch for dancing lights."
         }
       ],
-      "tags": ["nature", "fae", "mystery"],
+      "tags": [
+        "nature",
+        "fae",
+        "mystery"
+      ],
       "estimatedTime": "3 hours"
+    },
+    {
+      "id": "haunting-heart-london",
+      "published": true,
+      "title": "The Haunting Heart of London",
+      "description": "Uncover the dark folklore of central London, from ghostly apparitions to monstrous serpents, as you walk the ancient streets of the City.",
+      "difficulty": "easy",
+      "distance": 2.1,
+      "startLocation": {
+        "latitude": 51.5153,
+        "longitude": -0.0983,
+        "name": "Old Bailey / Site of Newgate Prison"
       },
-    {
-  "id": "haunting-heart-london",
-  "title": "The Haunting Heart of London",
-  "description": "Uncover the dark folklore of central London, from ghostly apparitions to monstrous serpents, as you walk the ancient streets of the City.",
-  "duration": 90,
-  "difficulty": "easy",
-  "distance": 2.1,
-  "startLocation": {
-    "latitude": 51.5153,
-    "longitude": -0.0983,
-    "name": "Old Bailey / Site of Newgate Prison"
-  },
-  "waypoints": [
-    {
-      "order": 1,
-      "storyId": "black-dog-newgate",
-      "instruction": "Begin at Old Bailey, once the site of Newgate Prison. Imagine the Black Dog stalking the dark corridors of the past.",
-      "waitTime": 300
-    },
-    {
-      "order": 2,
-      "storyId": "ghost-of-cock-lane",
-      "instruction": "Walk east along Giltspur Street and Cock Lane. Listen for ghostly knocks—you're now in 'Scratching Fanny’s' territory.",
-      "waitTime": 300
-    },
-    {
-      "order": 3,
-      "storyId": "serpent-bow-church",
-      "instruction": "Head east to St. Mary-le-Bow Church on Cheapside. Look down the crypt steps and imagine a serpent slithering below.",
-      "waitTime": 300
-    },
-    {
-      "order": 4,
-      "storyId": "bakers-dozen-devil",
-      "instruction": "Continue along Bread Street. Stop near the corner where bakers once short-changed the Devil himself.",
-      "waitTime": 300
+      "waypoints": [
+        {
+          "order": 1,
+          "storyId": "black-dog-newgate",
+          "instruction": "Begin at Old Bailey, once the site of Newgate Prison. Imagine the Black Dog stalking the dark corridors of the past."
+        },
+        {
+          "order": 2,
+          "storyId": "ghost-of-cock-lane",
+          "instruction": "Walk east along Giltspur Street and Cock Lane. Listen for ghostly knocks, because you're now in 'Scratching Fanny’s' territory."
+        },
+        {
+          "order": 3,
+          "storyId": "serpent-bow-church",
+          "instruction": "Head east to St. Mary-le-Bow Church on Cheapside. Look down the crypt steps and imagine a serpent slithering below."
+        },
+        {
+          "order": 4,
+          "storyId": "bakers-dozen-devil",
+          "instruction": "Continue along Bread Street. Stop near the corner where bakers once short-changed the Devil himself."
+        }
+      ],
+      "tags": [
+        "ghost",
+        "urban legend",
+        "haunting",
+        "London"
+      ],
+      "estimatedTime": "1.5 hours"
     }
-  ],
-  "tags": ["ghost", "urban legend", "haunting", "London"],
-  "estimatedTime": "1.5 hours"
-  }
-     ]
+  ]
 }

@@ -1,59 +1,88 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d5a3d" />
   <title>Folklore Explorer</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 </head>
 <body>
+  <a class="skip-link" href="#stories">Skip to the story list</a>
+
   <header>
     <h1>🗺️ Folklore Explorer</h1>
     <div class="subtitle">Discover the magic hidden in your landscape</div>
   </header>
-  
+
+  <noscript>
+    <p class="noscript-note">Folklore Explorer needs JavaScript to show the map and stories.</p>
+  </noscript>
+
   <div id="modeSelector">
-    <button id="exploreMode" class="mode-btn active" onclick="setMode('explore')">
+    <button id="exploreMode" class="mode-btn active" type="button" aria-pressed="true">
       🗺️ Explore Mode
     </button>
-    <button id="guidedMode" class="mode-btn" onclick="setMode('guided')">
+    <button id="guidedMode" class="mode-btn" type="button" aria-pressed="false">
       🚶 Guided Walk
     </button>
   </div>
 
   <div id="walkSelector" style="display: none;">
-    <select id="walkFilter">
+    <select id="walkFilter" aria-label="Choose a guided walk">
       <option value="">Select a guided walk...</option>
     </select>
-    <button id="startWalk" onclick="startGuidedWalk()">Start Walk</button>
+    <button id="startWalk" type="button">Start Walk</button>
+    <button id="saveOffline" type="button" class="secondary-btn">⬇ Save for offline</button>
   </div>
-  
+
   <div id="searchFilters">
-    <input type="text" id="searchBar" placeholder="🔍 Search stories and legends..." />
-    <select id="categoryFilter">
+    <input type="text" id="searchBar" placeholder="🔍 Search stories and legends..." aria-label="Search stories and legends" />
+    <select id="categoryFilter" aria-label="Filter by category">
       <option value="">All Categories</option>
       <option value="Ghost Story">👻 Ghost Story</option>
       <option value="Folk Tale">📖 Folk Tale</option>
       <option value="Fae Creature">🧚 Fae Creature</option>
     </select>
   </div>
-  
-  <div id="map" style="width: 90%; height: 500px;"></div>
+
+  <!-- Height and margins come from styles.css, so the mobile rules apply -->
+  <div id="map" role="region" aria-label="Map of folklore locations. The story list below has the same information."></div>
   <div id="stories"></div>
-  
-  <!-- Load Leaflet first -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <footer class="site-footer">
+    <p>
+      Stay on public rights of way, take care near roads, cliffs, livestock, and tides,
+      and check weather and conditions before you set off.
+    </p>
+    <p>
+      This site does not collect or store your location. Map data &copy;
+      <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.
+      Walking directions use the public <a href="https://project-osrm.org/">OSRM</a> service, which receives your position when it plans a route.
+    </p>
+    <p><button id="clearProgress" type="button" class="link-btn">Clear saved progress on this device</button></p>
+  </footer>
+
+  <!-- Leaflet and the routing plugin load first (pinned versions) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-  
-  <!-- Load your JavaScript files -->
-  <script src="js/location.js"></script>
-  <script src="js/stories.js"></script>
-  <script src="js/walks.js"></script>
-  <script src="js/app.js"></script>
- 
+
+  <!-- The app is a set of ES modules, started by app.js -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
